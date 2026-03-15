@@ -12,7 +12,6 @@ import { CardData } from '../lib/card-data';
 import {
   CARD_WIDTH,
   CARD_HEIGHT,
-  CARD_GAP,
   SNAP_INTERVAL,
   FONT_BEBAS,
   COLOR_GOLD,
@@ -22,18 +21,17 @@ interface ServiceCardProps {
   item: CardData;
   index: number;
   scrollX: SharedValue<number>;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 export default function ServiceCard({ item, index, scrollX, onPress }: ServiceCardProps) {
-  const inputRange = [
-    (index - 1) * SNAP_INTERVAL,
-    index * SNAP_INTERVAL,
-    (index + 1) * SNAP_INTERVAL,
-  ];
-
   // Outer wrapper: scale, rotateY, opacity, iOS shadow. NO overflow:hidden (would clip shadow).
   const outerStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      (index - 1) * SNAP_INTERVAL,
+      index * SNAP_INTERVAL,
+      (index + 1) * SNAP_INTERVAL,
+    ];
     const scale        = interpolate(scrollX.value, inputRange, [0.88, 1.1, 0.88],  Extrapolation.CLAMP);
     const opacity      = interpolate(scrollX.value, inputRange, [0.5,  1.0,  0.5 ], Extrapolation.CLAMP);
     // rotateY: card right-of-center → -8deg (left edge toward viewer, card faces left = toward center)
@@ -62,6 +60,11 @@ export default function ServiceCard({ item, index, scrollX, onPress }: ServiceCa
 
   // Inner container: animated borderColor for Android gold glow (also applies on iOS).
   const innerStyle = useAnimatedStyle(() => {
+    const inputRange = [
+      (index - 1) * SNAP_INTERVAL,
+      index * SNAP_INTERVAL,
+      (index + 1) * SNAP_INTERVAL,
+    ];
     const borderColor = interpolateColor(
       scrollX.value,
       inputRange,
@@ -96,7 +99,7 @@ export default function ServiceCard({ item, index, scrollX, onPress }: ServiceCa
 
 const styles = StyleSheet.create({
   outer: {
-    marginRight: CARD_GAP,
+    marginRight: SNAP_INTERVAL - CARD_WIDTH,
     // No overflow:hidden here — required for iOS shadow to render.
   },
   inner: {
@@ -116,6 +119,7 @@ const styles = StyleSheet.create({
   },
   emoji: {
     fontSize: 64,
+    lineHeight: 72,
     marginBottom: 12,
   },
   title: {

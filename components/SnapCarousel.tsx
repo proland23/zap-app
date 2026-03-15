@@ -25,7 +25,9 @@ interface SnapCarouselProps {
 }
 
 function triggerHaptic() {
-  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {
+    // Haptics not available on this device; ignore.
+  });
 }
 
 export default function SnapCarousel({ onComingSoon }: SnapCarouselProps) {
@@ -50,6 +52,11 @@ export default function SnapCarousel({ onComingSoon }: SnapCarouselProps) {
     },
   );
 
+  const contentStyle = React.useMemo(
+    () => ({ paddingHorizontal: (screenWidth - CARD_WIDTH) / 2 }),
+    [screenWidth],
+  );
+
   return (
     <AnimatedFlatList
       data={CARDS}
@@ -66,9 +73,7 @@ export default function SnapCarousel({ onComingSoon }: SnapCarouselProps) {
         offset: SNAP_INTERVAL * index,
         index,
       })}
-      contentContainerStyle={{
-        paddingHorizontal: (screenWidth - CARD_WIDTH) / 2,
-      }}
+      contentContainerStyle={contentStyle}
       renderItem={({ item, index }) => (
         <ServiceCard
           item={item}
@@ -77,7 +82,9 @@ export default function SnapCarousel({ onComingSoon }: SnapCarouselProps) {
           onPress={
             item.comingSoon
               ? () => onComingSoon(item.title)
-              : () => router.push(item.route! as never)
+              : item.route
+                ? () => router.push(item.route as Parameters<typeof router.push>[0])
+                : undefined
           }
         />
       )}
