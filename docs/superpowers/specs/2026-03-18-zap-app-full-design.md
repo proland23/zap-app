@@ -1,6 +1,6 @@
-# ZAP App — Full Design Spec
+# Zapp App — Full Design Spec
 **Date:** 2026-03-18
-**Project:** ZAP by Rest & Recharge
+**Project:** Zapp by Rest & Recharge
 **Status:** Approved by user
 
 ---
@@ -20,7 +20,7 @@ Full-featured React Native / Expo app for Rest & Recharge Inc's I-20 Exit 183 st
 | Auth (Apple/Google) | Supabase OAuth via `expo-web-browser` | Works in Expo Go without native build |
 | Create Account fields | Email + Password + Full Name + Phone | Personalized greeting + future SMS |
 | Sign-in layout | Full-bleed hero (gold glow top, bottom-sheet card) | Cinematic brand impact |
-| Drawer direction | Left-slide, ZAP logo at top, gold bar on active | Standard UX + brand reinforcement |
+| Drawer direction | Left-slide, Zapp logo at top, gold bar on active | Standard UX + brand reinforcement |
 
 > **Expo Go note:** Stripe, OneSignal, and Google Maps custom styles require a custom dev build. During the Expo Go testing phase, these features will render in degraded/mock mode as documented per-screen below. An EAS dev build will be required before submission.
 
@@ -185,7 +185,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 ### Auth — `app/login.tsx`
 
 **Layout:** Full-bleed two-zone layout.
-- **Top half:** `#0E2035` → `#050D18` gradient. ZAP wordmark (Bebas Neue, 64px, `COLOR_GOLD`, letter-spacing 10px). Radial gold glow behind logo via blurred `View`. Tagline "CHARGE · STAY · EAT · RIDE · FLY" in muted uppercase.
+- **Top half:** `#0E2035` → `#050D18` gradient. Zapp wordmark (Bebas Neue, 64px, `COLOR_GOLD`, letter-spacing 10px). Radial gold glow behind logo via blurred `View`. Tagline "CHARGE · STAY · EAT · RIDE · FLY" in muted uppercase.
 - **Bottom half:** Rounded-top card (`border-radius: 24px`, `background: #0A1929`), handle bar at top.
   - **Sign-in mode:** Email input, Password input, SIGN IN button (gold), OR divider, Apple + Google side-by-side buttons, "New here? Create account" link.
   - **Create Account mode:** Animates in (slide up with `withSpring`) with Full Name, Phone, Email, Password inputs, CREATE ACCOUNT button. Back link to sign-in.
@@ -227,7 +227,7 @@ Use `react-native-onesignal` v5 API (`OneSignal.initialize`, `OneSignal.Notifica
 
 **Drawer panel (`DrawerContent.tsx`):**
 - Background: `#0E2035`, `border-right: 1px solid rgba(245,166,35,0.15)`
-- ZAP logo (Bebas Neue, gold) + tagline at top, gold underline divider
+- Zapp logo (Bebas Neue, gold) + tagline at top, gold underline divider
 - User name + points balance (from `user_profiles`) below logo
 - Nav items: Home, Charge, Stay, Eat, Rewards, Profile — uppercase, letter-spacing 1.5px
   - Active: gold left bar (3px wide, `COLOR_GOLD`) + gold text

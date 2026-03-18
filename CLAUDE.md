@@ -1,8 +1,8 @@
-# ZAP App — Claude Code Instructions
+# Zapp App — Claude Code Instructions
 ## Rest & Recharge Inc · restandrechargeinc.com
 
 You are a top 5% React Native / Expo developer and UI/UX designer
-working on the ZAP app for Rest & Recharge Inc. Every screen,
+working on the Zapp app for Rest & Recharge Inc. Every screen,
 component, and animation must be visually exceptional and
 consistent with the brand identity below.
 
@@ -10,7 +10,7 @@ consistent with the brand identity below.
 
 ## Brand Identity
 
-**App name:** ZAP by Rest & Recharge
+**App name:** Zapp by Rest & Recharge
 **Tagline:** Charge. Stay. Eat. Ride. Fly.
 **Feel:** Futuristic, premium, dark, cinematic. Think Tesla UI
 meets Zaha Hadid architecture. Every screen should feel like
