@@ -1,0 +1,89 @@
+<h2>Navigation Structure</h2>
+<p class="subtitle">How should the main screens be connected? This affects every screen in the app.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="tab-bar" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050D18;padding:16px;font-family:system-ui">
+      <!-- Phone mockup -->
+      <div style="background:#0A1929;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="background:#0E2035;border-radius:8px;height:140px;display:flex;align-items:center;justify-content:center;color:#C8D8EC;font-size:12px;margin-bottom:8px">Screen content</div>
+        <!-- Tab bar -->
+        <div style="display:flex;justify-content:space-around;background:#050D18;border-top:1px solid rgba(245,166,35,0.15);padding:8px 0;border-radius:0 0 8px 8px">
+          <div style="text-align:center">
+            <div style="font-size:18px">⚡</div>
+            <div style="font-size:8px;color:#F5A623;letter-spacing:1px">HOME</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px">🏆</div>
+            <div style="font-size:8px;color:#7A90AA;letter-spacing:1px">REWARDS</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px">👤</div>
+            <div style="font-size:8px;color:#7A90AA;letter-spacing:1px">PROFILE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Bottom Tab Bar</h3>
+      <p>3-tab bar: <strong>Home</strong> (carousel hub), <strong>Rewards</strong>, <strong>Profile</strong>. Charge/Stay/Eat/Shop/Ride/Fly are all accessed via carousel cards. Always visible, one tap to switch between main sections.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="drawer" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050D18;padding:16px;font-family:system-ui">
+      <div style="background:#0A1929;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.08)">
+        <!-- Header with hamburger -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="color:#F5A623;font-weight:bold;font-size:13px;letter-spacing:2px">ZAP</div>
+          <div style="color:#C8D8EC;font-size:16px">☰</div>
+        </div>
+        <div style="background:#0E2035;border-radius:8px;height:140px;display:flex;align-items:center;justify-content:center;color:#C8D8EC;font-size:12px">Screen content</div>
+        <!-- No tab bar -->
+        <div style="text-align:center;margin-top:8px;color:#7A90AA;font-size:9px;letter-spacing:1px">NO TAB BAR</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Side Drawer</h3>
+      <p>Hamburger menu opens a slide-in drawer with all destinations. Cleaner full-screen experience, but navigation is hidden — one extra tap to get anywhere.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="five-tab" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050D18;padding:16px;font-family:system-ui">
+      <div style="background:#0A1929;border-radius:12px;padding:12px;border:1px solid rgba(255,255,255,0.08)">
+        <div style="background:#0E2035;border-radius:8px;height:120px;display:flex;align-items:center;justify-content:center;color:#C8D8EC;font-size:12px;margin-bottom:8px">Screen content</div>
+        <div style="display:flex;justify-content:space-around;background:#050D18;border-top:1px solid rgba(245,166,35,0.15);padding:6px 0;border-radius:0 0 8px 8px">
+          <div style="text-align:center">
+            <div style="font-size:14px">🏠</div>
+            <div style="font-size:7px;color:#F5A623;letter-spacing:1px">HOME</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px">⚡</div>
+            <div style="font-size:7px;color:#7A90AA;letter-spacing:1px">CHARGE</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px">🍽</div>
+            <div style="font-size:7px;color:#7A90AA;letter-spacing:1px">EAT</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px">🏆</div>
+            <div style="font-size:7px;color:#7A90AA;letter-spacing:1px">REWARDS</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:14px">👤</div>
+            <div style="font-size:7px;color:#7A90AA;letter-spacing:1px">PROFILE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — 5-Tab Bar</h3>
+      <p>Full tab bar: <strong>Home, Charge, Eat, Rewards, Profile</strong>. Every major destination one tap away. Stay and Shop still accessible via carousel. Heaviest navigation but maximum discoverability.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">My recommendation: <strong>Option A (3-tab)</strong> — keeps the carousel as the hero interaction and matches the cinematic, minimal feel of the brand. Rewards and Profile are the only tabs users need outside of it.</p>

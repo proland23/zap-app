@@ -81,7 +81,6 @@ export default function ServiceCard({ item, index, scrollX, onPress }: ServiceCa
         <Animated.View style={[styles.inner, innerStyle]}>
           <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
           <View style={styles.content}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.subtitle}>{item.subtitle}</Text>
 
@@ -116,11 +115,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-  },
-  emoji: {
-    fontSize: 64,
-    lineHeight: 72,
-    marginBottom: 12,
   },
   title: {
     color: '#fff',

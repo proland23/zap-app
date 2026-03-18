@@ -1,0 +1,127 @@
+<h2>Side Drawer Design</h2>
+<p class="subtitle">How should the navigation drawer look when it slides in?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="minimal" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050D18;padding:0;font-family:system-ui;min-height:380px;display:flex;overflow:hidden">
+      <!-- Dimmed screen behind -->
+      <div style="flex:1;background:rgba(5,13,24,0.6);position:relative">
+        <div style="padding:16px;color:#7A90AA;font-size:10px">← Home screen behind</div>
+      </div>
+      <!-- Drawer panel -->
+      <div style="width:220px;background:#0A1929;border-left:1px solid rgba(255,255,255,0.06);padding:20px 0;display:flex;flex-direction:column">
+        <!-- User info -->
+        <div style="padding:0 20px 20px;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div style="width:40px;height:40px;border-radius:20px;background:#0E2035;border:1px solid rgba(245,166,35,0.3);margin-bottom:10px;display:flex;align-items:center;justify-content:center">
+            <span style="color:#F5A623;font-size:16px;font-weight:700">J</span>
+          </div>
+          <div style="color:#fff;font-size:13px;font-weight:600">John Doe</div>
+          <div style="color:#7A90AA;font-size:10px;margin-top:2px">⭐ 1,240 ZAP Points</div>
+        </div>
+        <!-- Nav items -->
+        <div style="padding:16px 0;flex:1">
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px;background:rgba(245,166,35,0.08);border-right:2px solid #F5A623">
+            <span style="color:#F5A623;font-size:14px">⚡</span>
+            <span style="color:#F5A623;font-size:12px;font-weight:600;letter-spacing:1px">HOME</span>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
+            <span style="color:#7A90AA;font-size:14px">🗺</span>
+            <span style="color:#7A90AA;font-size:12px;letter-spacing:1px">CHARGE</span>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
+            <span style="color:#7A90AA;font-size:14px">🏠</span>
+            <span style="color:#7A90AA;font-size:12px;letter-spacing:1px">STAY</span>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
+            <span style="color:#7A90AA;font-size:14px">🍽</span>
+            <span style="color:#7A90AA;font-size:12px;letter-spacing:1px">EAT</span>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
+            <span style="color:#7A90AA;font-size:14px">🏆</span>
+            <span style="color:#7A90AA;font-size:12px;letter-spacing:1px">REWARDS</span>
+          </div>
+          <div style="padding:12px 20px;display:flex;align-items:center;gap:12px">
+            <span style="color:#7A90AA;font-size:14px">👤</span>
+            <span style="color:#7A90AA;font-size:12px;letter-spacing:1px">PROFILE</span>
+          </div>
+        </div>
+        <!-- Sign out -->
+        <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.06)">
+          <span style="color:#7A90AA;font-size:11px;letter-spacing:1px">SIGN OUT</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Right-side Minimal</h3>
+      <p>Drawer slides in from the <strong>right</strong>. Dark card surface, gold accent on active item, user avatar + points at top. Clean vertical list.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="left-glass" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#050D18;padding:0;font-family:system-ui;min-height:380px;display:flex;overflow:hidden">
+      <!-- Drawer panel LEFT -->
+      <div style="width:220px;background:rgba(14,32,53,0.97);border-right:1px solid rgba(245,166,35,0.15);padding:20px 0;display:flex;flex-direction:column">
+        <!-- ZAP logo at top -->
+        <div style="padding:0 20px 16px;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div style="font-size:28px;font-weight:900;letter-spacing:6px;color:#F5A623;line-height:1">ZAP</div>
+          <div style="font-size:8px;letter-spacing:2px;color:#7A90AA;margin-top:3px">BY REST & RECHARGE</div>
+          <div style="width:24px;height:1px;background:#F5A623;margin-top:8px"></div>
+        </div>
+        <!-- User info -->
+        <div style="padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div style="color:#C8D8EC;font-size:13px;font-weight:600">John Doe</div>
+          <div style="display:flex;align-items:center;gap:4px;margin-top:4px">
+            <div style="width:6px;height:6px;border-radius:3px;background:#F5A623"></div>
+            <span style="color:#F5A623;font-size:10px;letter-spacing:1px">1,240 PTS</span>
+          </div>
+        </div>
+        <!-- Nav items -->
+        <div style="padding:12px 0;flex:1">
+          <div style="padding:11px 20px;display:flex;align-items:center;gap:12px">
+            <div style="width:3px;height:24px;background:#F5A623;border-radius:2px"></div>
+            <span style="color:#F5A623;font-size:12px;font-weight:700;letter-spacing:1.5px">HOME</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:12px">
+            <span style="color:#00D4FF;font-size:12px;letter-spacing:1px">CHARGE</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:12px">
+            <span style="color:#C8D8EC;font-size:12px;letter-spacing:1px">STAY</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:12px">
+            <span style="color:#C8D8EC;font-size:12px;letter-spacing:1px">EAT</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:12px">
+            <span style="color:#C8D8EC;font-size:12px;letter-spacing:1px">REWARDS</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:12px">
+            <span style="color:#C8D8EC;font-size:12px;letter-spacing:1px">PROFILE</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:8px">
+            <span style="color:#7A90AA;font-size:11px;letter-spacing:1px">SHOP</span>
+            <span style="background:rgba(245,166,35,0.15);color:#F5A623;font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:4px">SOON</span>
+          </div>
+          <div style="padding:11px 20px 11px 35px;display:flex;align-items:center;gap:8px">
+            <span style="color:#7A90AA;font-size:11px;letter-spacing:1px">RIDE</span>
+            <span style="background:rgba(245,166,35,0.15);color:#F5A623;font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:4px">SOON</span>
+          </div>
+        </div>
+        <!-- Sign out -->
+        <div style="padding:16px 20px;border-top:1px solid rgba(255,255,255,0.06)">
+          <span style="color:#7A90AA;font-size:11px;letter-spacing:1px">SIGN OUT</span>
+        </div>
+      </div>
+      <!-- Dimmed screen right -->
+      <div style="flex:1;background:rgba(5,13,24,0.75)">
+        <div style="padding:16px;color:#7A90AA;font-size:10px;text-align:right">Home screen →</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Left-side Brand Panel</h3>
+      <p>Drawer slides from the <strong>left</strong> (standard UX pattern). ZAP logo at top, gold vertical bar on active item, cyan accent for Charge, "SOON" badges on Ride/Shop.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:16px">My recommendation: <strong>Option B</strong> — left-slide is the universal mobile pattern users expect. The ZAP logo at the top reinforces brand on every navigation action, and the "SOON" badges on Ride/Shop tease the roadmap.</p>
