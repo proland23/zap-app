@@ -15,7 +15,7 @@ Full-featured React Native / Expo app for Rest & Recharge Inc's I-20 Exit 183 st
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Expo SDK | 55 (current codebase) | Expo Go 55 is the correct target; user will update Expo Go on device |
+| Expo SDK | 54 | Expo Go 54.0.6 on user's device — SDK 55 not yet available on App Store |
 | Navigation | Expo Router drawer (`app/(drawer)/`) | Reliability in Expo Go, minimal code |
 | Auth (Apple/Google) | Supabase OAuth via `expo-web-browser` | Works in Expo Go without native build |
 | Create Account fields | Email + Password + Full Name + Phone | Personalized greeting + future SMS |
@@ -28,7 +28,7 @@ Full-featured React Native / Expo app for Rest & Recharge Inc's I-20 Exit 183 st
 
 ## SDK Note
 
-The codebase is on **Expo SDK 55** (`"expo": "~55.0.6"`). The user's device runs **Expo Go 55** (once updated — Expo Go 54.0.6 is SDK 54 and incompatible). Do **not** downgrade the SDK. Instead, update Expo Go on the device to version 55.
+The codebase is on **Expo SDK 54** (`"expo": "~54.0.0"`, `expo-router: "~6.0.23"`, `react-native: "0.81.5"`). This matches **Expo Go 54.0.6** on the user's device. Do not upgrade to SDK 55 until Expo Go 55 is available on the App Store.
 
 ---
 
