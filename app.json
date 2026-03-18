@@ -21,7 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#050D18",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,7 +35,8 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "sentry-expo"
+      "sentry-expo",
+      "expo-web-browser"
     ],
     "extra": {
       "router": {},

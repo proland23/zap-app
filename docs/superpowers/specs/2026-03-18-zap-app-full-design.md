@@ -90,7 +90,11 @@ components/
 Already installed (applied during brainstorm phase):
 - `@react-native-async-storage/async-storage` — session persistence
 - `@gorhom/bottom-sheet` — Reserve and Checkout bottom sheets
-- `react-native-onesignal@^5.3.6` — push notifications (dev build only)
+- `react-native-onesignal@^5.3.6` — push notifications (dev build only, `react-native-onesignal` v5 — not `onesignal-expo`)
+- `expo-web-browser` — OAuth browser popup for Apple/Google sign-in
+- `expo-auth-session` — `makeRedirectUri()` for OAuth redirect URI
+- `zustand` — cart store and any other lightweight global state
+- `expo-constants` — included transitively via `expo`; import as `import Constants from 'expo-constants'`
 
 > `@gorhom/bottom-sheet` requires `react-native-reanimated` and `react-native-gesture-handler` — both already installed.
 
@@ -209,15 +213,17 @@ useEffect(() => {
 ```
 Session guard **only** lives here — remove duplicate guard from `home.tsx` (now `(drawer)/index.tsx`).
 
-**OneSignal init (dev-build only):**
+**OneSignal init (dev-build only, package: `react-native-onesignal` v5):**
 ```ts
 import Constants from 'expo-constants';
+import { OneSignal } from 'react-native-onesignal';
+
 if (Constants.appOwnership !== 'expo') {
-  OneSignal.initialize(ONESIGNAL_APP_ID);
+  OneSignal.initialize(process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID!);
   OneSignal.Notifications.requestPermission(true);
 }
 ```
-Use `onesignal-expo` v5 API (`OneSignal.initialize`, `OneSignal.Notifications`). The v4 API is incompatible.
+Use `react-native-onesignal` v5 API (`OneSignal.initialize`, `OneSignal.Notifications`). The v4 API is incompatible and uses a different package name.
 
 **Drawer panel (`DrawerContent.tsx`):**
 - Background: `#0E2035`, `border-right: 1px solid rgba(245,166,35,0.15)`
@@ -240,7 +246,10 @@ Migrated from `app/home.tsx` (old file deleted). Changes:
 - Add hamburger `Pressable` top-left that calls `navigation.openDrawer()` (from `useNavigation()`)
 - Keep existing greeting, carousel, coming-soon modal unchanged
 
-> `app/home.tsx` and `app/shop.tsx` must be **deleted**. `app/(drawer)/shop.tsx` should be a minimal placeholder shell (no full implementation needed — tap navigates via carousel coming-soon modal). Its route must exist to prevent a navigation crash.
+> **File system actions required before any screen work:**
+> 1. Delete `app/home.tsx` and `app/shop.tsx` — failure to delete will cause route conflicts and redirect loops with the drawer group.
+> 2. Create `app/stay/` directory and add a placeholder `app/stay/[id].tsx` shell on day one — without this file, `router.push('/stay/${id}')` calls from the grid will throw immediately.
+> 3. Create `app/(drawer)/shop.tsx` as a minimal navy placeholder — its route must exist to prevent navigation crashes even though Shop is a coming-soon item.
 
 **Loading state:** Navy `View` shown while session resolves (handled by drawer `_layout`; home screen always has a valid session by the time it renders).
 
@@ -288,7 +297,7 @@ Migrated from `app/home.tsx` (old file deleted). Changes:
 **Detail screen (`stay/[id].tsx`):**
 - Full-width photo placeholder hero (height 240px, `#0E2035` background)
 - Unit name (Bebas Neue), description, nightly rate
-- Check-in / check-out date selectors (custom date picker or `@react-native-community/datetimepicker`)
+- Check-in / check-out date selectors using a custom inline calendar (two rows of date cells, no external date picker package required — avoids native module dependency)
 - Total = nights × rate, displayed in gold
 - BOOK NOW button (full-width gold)
 - **In Expo Go:** mock payment confirmation screen
@@ -317,7 +326,7 @@ interface CartState {
 // Derive total outside the store using a selector to ensure re-renders:
 // const total = useCartStore(state => state.items.reduce((sum, i) => sum + i.price * i.qty, 0));
 ```
-- `CartBadge` renders item count on hamburger button in drawer header
+- `CartBadge` renders item count in the drawer header via a custom `headerRight` component in `(drawer)/_layout.tsx` — Expo Router drawer does not allow direct overlay on the hamburger button
 - Floating CHECKOUT button appears when cart is non-empty (bottom of screen, gold, spring animation)
 - Checkout: bottom sheet summary list → total → PLACE ORDER button
 - **In Expo Go:** mock order confirmation
@@ -412,6 +421,37 @@ if (Constants.appOwnership !== 'expo') {
   });
 }
 ```
+
+---
+
+## Stripe Helpers — `lib/stripe.ts`
+
+Export two functions (dev-build only — wrap all with `Constants.appOwnership !== 'expo'` guard):
+
+```ts
+// lib/stripe.ts
+import { initStripe, presentPaymentSheet, createPaymentMethod } from '@stripe/stripe-react-native';
+import Constants from 'expo-constants';
+
+export async function initializeStripe() {
+  if (Constants.appOwnership === 'expo') return;
+  await initStripe({ publishableKey: process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY! });
+}
+
+export async function openPaymentSheet(clientSecret: string): Promise<boolean> {
+  if (Constants.appOwnership === 'expo') return true; // mock success in Expo Go
+  const { error } = await presentPaymentSheet();
+  return !error;
+}
+```
+
+Call `initializeStripe()` once in `app/(drawer)/_layout.tsx` on mount.
+
+---
+
+## Session Timeout Caveat
+
+`lib/session-context.tsx` has a 5-second safety timeout that sets `loading = false` if `onAuthStateChange` never fires. On extremely slow networks, this can redirect a user to the login screen even though a valid session is stored in AsyncStorage — because the timeout fires before the auth event arrives. This is an acceptable trade-off to prevent the splash screen from being permanently stuck. The implementor should not treat this as a bug or attempt to extend the timeout further.
 
 ---
 

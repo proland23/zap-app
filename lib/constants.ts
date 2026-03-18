@@ -18,3 +18,5 @@ export const COLOR_GREEN   = '#1F9B6B';
 export const COLOR_TEXT_PRIMARY   = '#FFFFFF';
 export const COLOR_TEXT_SECONDARY = '#C8D8EC';
 export const COLOR_TEXT_MUTED     = '#7A90AA';
+export const COLOR_PURPLE  = '#6B3FA0';
+export const COLOR_RED     = '#C0392B';
