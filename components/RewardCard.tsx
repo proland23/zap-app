@@ -40,7 +40,7 @@ export default function RewardCard({
   const canRedeem = balance >= cost;
 
   useEffect(() => {
-    const target = Math.min(balance / cost, 1);
+    const target = cost > 0 ? Math.min(balance / cost, 1) : 1;
     // cancelAnimation aborts any in-progress animation (including the 200ms delay)
     // so the new target takes effect immediately rather than stacking animations.
     // progress is a stable shared value ref — safe to omit from deps.
@@ -86,9 +86,10 @@ export default function RewardCard({
         style={[styles.button, { backgroundColor: accentColor }, !canRedeem && styles.buttonDisabled]}
         disabled={!canRedeem || redeeming}
         accessibilityLabel={canRedeem ? `Redeem ${label}` : `${label} — insufficient points`}
-        accessibilityState={{ disabled: !canRedeem || redeeming }}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canRedeem || redeeming, busy: redeeming }}
         onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onRedeem();
         }}
       >
