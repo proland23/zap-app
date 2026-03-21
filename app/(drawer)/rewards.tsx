@@ -1,11 +1,12 @@
 // app/(drawer)/rewards.tsx
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, Alert, StyleSheet, StatusBar, ScrollView,
   TextInput, Pressable,
 } from 'react-native';
 import Animated, {
   useSharedValue,
+  useDerivedValue,
   useAnimatedProps,
   withTiming,
   cancelAnimation,
@@ -58,11 +59,13 @@ export default function Rewards() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const redeemingIdRef = useRef<string | null>(null);
 
   // Animated balance — drives the count-up TextInput
   const balanceSV = useSharedValue(0);
+  const formattedBalance = useDerivedValue(() => formatPoints(balanceSV.value));
   const animatedProps = useAnimatedProps(() => ({
-    value: formatPoints(balanceSV.value),
+    value: formattedBalance.value,
   }));
 
   // Trigger count-up whenever balance changes
@@ -109,7 +112,7 @@ export default function Rewards() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleRedeem = useCallback((item: RewardCatalogItem) => {
-    if (redeemingId !== null) return; // block concurrent redemptions
+    if (redeemingIdRef.current !== null) return; // block concurrent redemptions
     if (balance === null || balance < item.cost) return;
 
     Alert.alert(
@@ -120,12 +123,14 @@ export default function Rewards() {
         {
           text: 'Redeem',
           onPress: async () => {
+            redeemingIdRef.current = item.id;
             setRedeemingId(item.id);
             const { error } = await supabase.rpc('redeem_points', {
               uid: session!.user.id,
               cost: item.cost,
               reward: item.id,
             });
+            redeemingIdRef.current = null;
             setRedeemingId(null);
             if (error) {
               Alert.alert('Error', 'Could not redeem — please try again.');
@@ -136,7 +141,7 @@ export default function Rewards() {
         },
       ]
     );
-  }, [redeemingId, balance, session, fetchData]);
+  }, [balance, session, fetchData]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -193,33 +198,37 @@ export default function Rewards() {
         )}
 
         {/* Transaction history */}
-        <Text style={styles.sectionLabel}>HISTORY</Text>
-        {loading ? (
-          <View style={styles.skeletonContainer}>
-            {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
-          </View>
-        ) : transactions.length === 0 ? (
-          <Text style={styles.emptyText}>Start charging to earn points!</Text>
-        ) : (
-          transactions.map((tx, i) => (
-            <View
-              key={tx.id}
-              style={[styles.txRow, i === transactions.length - 1 && styles.txRowLast]}
-            >
-              <View style={styles.txLeft}>
-                <Text style={styles.txReason}>{tx.reason}</Text>
-                <Text style={styles.txDate}>
-                  {new Date(tx.created_at).toLocaleDateString(undefined, {
-                    month: 'short',
-                    day: 'numeric',
-                  })}
-                </Text>
+        {!fetchError && (
+          <>
+            <Text style={styles.sectionLabel}>HISTORY</Text>
+            {loading ? (
+              <View style={styles.skeletonContainer}>
+                {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
               </View>
-              <Text style={[styles.txDelta, { color: tx.delta >= 0 ? COLOR_GOLD : COLOR_RED }]}>
-                {tx.delta >= 0 ? '+' : ''}{tx.delta.toLocaleString()}
-              </Text>
-            </View>
-          ))
+            ) : transactions.length === 0 ? (
+              <Text style={styles.emptyText}>Start charging to earn points!</Text>
+            ) : (
+              transactions.map((tx, i) => (
+                <View
+                  key={tx.id}
+                  style={[styles.txRow, i === transactions.length - 1 && styles.txRowLast]}
+                >
+                  <View style={styles.txLeft}>
+                    <Text style={styles.txReason}>{tx.reason}</Text>
+                    <Text style={styles.txDate}>
+                      {new Date(tx.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </Text>
+                  </View>
+                  <Text style={[styles.txDelta, { color: tx.delta >= 0 ? COLOR_GOLD : COLOR_RED }]}>
+                    {tx.delta >= 0 ? '+' : ''}{tx.delta.toLocaleString()}
+                  </Text>
+                </View>
+              ))
+            )}
+          </>
         )}
 
       </ScrollView>

@@ -12,7 +12,7 @@ import * as Haptics from 'expo-haptics';
 import {
   COLOR_CARD,
   COLOR_NAVY,
-  COLOR_TEXT_SECONDARY,
+  COLOR_TEXT_PRIMARY,
   COLOR_TEXT_MUTED,
 } from '../lib/constants';
 
@@ -53,9 +53,9 @@ export default function RewardCard({
     width: progress.value * trackWidth,
   }));
 
-  // No emoji per CLAUDE.md — plain text labels only
+  // ✓ is a Unicode check mark (U+2713), not an emoji — permitted by brand standards
   const statusText = canRedeem
-    ? 'REDEEMABLE'
+    ? '✓ REDEEMABLE'
     : `${(cost - balance).toLocaleString()} PTS TO GO`;
 
   return (
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   rewardLabel: {
-    color: COLOR_TEXT_SECONDARY,
+    color: COLOR_TEXT_PRIMARY,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 8,
