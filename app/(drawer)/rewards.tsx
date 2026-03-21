@@ -89,7 +89,7 @@ export default function Rewards() {
         .single(),
       supabase
         .from('points_transactions')
-        .select('*')
+        .select('id, delta, reason, created_at')
         .eq('user_id', session.user.id)
         .order('created_at', { ascending: false })
         .limit(20),
@@ -108,7 +108,7 @@ export default function Rewards() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const handleRedeem = (item: RewardCatalogItem) => {
+  const handleRedeem = useCallback((item: RewardCatalogItem) => {
     if (redeemingId !== null) return; // block concurrent redemptions
     if (balance === null || balance < item.cost) return;
 
@@ -136,12 +136,12 @@ export default function Rewards() {
         },
       ]
     );
-  };
+  }, [redeemingId, balance, session, fetchData]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}>
 
         {/* Balance hero */}
         <View style={styles.hero}>
@@ -229,6 +229,7 @@ export default function Rewards() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLOR_NAVY },
+  scrollContent: { flexGrow: 1 },
   hero: {
     alignItems: 'center',
     paddingVertical: 32,
@@ -267,7 +268,7 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   errorContainer: { alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16 },
-  errorText: { color: COLOR_TEXT_MUTED, fontSize: 13, marginBottom: 8, textAlign: 'center' },
+  errorText: { color: COLOR_RED, fontSize: 13, marginBottom: 8, textAlign: 'center' },
   retryText: { color: COLOR_GOLD, fontSize: 13, fontWeight: '600' },
   sectionLabel: {
     color: COLOR_TEXT_MUTED,
