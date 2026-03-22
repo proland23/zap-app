@@ -11,6 +11,8 @@ Rebuild the Profile screen with a polished header, edit-profile bottom sheet (na
 
 **No new components.** The edit bottom sheet and payment tab content are contained within the screen file. The screen already imports `@gorhom/bottom-sheet`, `supabase`, `useSession`, and `lib/stripe.ts` — all required dependencies exist.
 
+**`BottomSheetModalProvider`:** Wrap the `profile.tsx` return in `<BottomSheetModalProvider>` (same pattern as `charge.tsx`). This is the minimal-impact approach — the provider mounts/unmounts with the screen and avoids touching the shared drawer layout.
+
 ---
 
 ## Section 1: Header
@@ -26,19 +28,19 @@ Rebuild the Profile screen with a polished header, edit-profile bottom sheet (na
 **Info section (right, `flex: 1`):**
 - Name row: `flexDirection: 'row'`, `alignItems: 'center'`, `justifyContent: 'space-between'`
   - Name text: `COLOR_TEXT_PRIMARY`, 20px, `fontWeight: '800'`
-  - Edit icon: `✎` — `COLOR_GOLD`, 18px, `padding: 4` (tap target), `accessibilityLabel: "Edit profile"`, `accessibilityRole: "button"` — opens edit bottom sheet
-- Email: `COLOR_TEXT_MUTED`, 12px, `marginTop: 2`
-- Tier badge (`marginTop: 8`): gold pill — `backgroundColor: 'rgba(245,166,35,0.12)'`, `borderWidth: 1`, `borderColor: 'rgba(245,166,35,0.3)'`, `paddingHorizontal: 10`, `paddingVertical: 4`, `borderRadius: 8`, `alignSelf: 'flex-start'`
-  - Text: `* ` + `(profile.membership_tier ?? 'MEMBER').toUpperCase()` — `COLOR_GOLD`, 11px, `fontWeight: '700'`, `letterSpacing: 2`
-- Points: `COLOR_TEXT_MUTED`, 11px, `marginTop: 6` — `(profile.points_balance ?? 0).toLocaleString() + ' PTS'`
+  - Edit button: `Text` reading `"EDIT"` — `COLOR_GOLD`, 10px, `fontWeight: '700'`, `letterSpacing: 1`, `padding: 4` (tap target), `accessibilityLabel="Edit profile"`, `accessibilityRole="button"` — tapping sets `editName` to `profile?.full_name ?? ''` and calls `editSheetRef.current?.present()`
+- Email: `COLOR_TEXT_MUTED`, 12px, `marginTop: 2` — intentionally muted (secondary detail label, not body text)
+- Tier badge (`marginTop: 8`): gold pill — `backgroundColor: 'rgba(245,166,35,0.12)'`, `borderWidth: 1`, `borderColor: 'rgba(245,166,35,0.3)'`, `paddingHorizontal: 10`, `paddingVertical: 4`, `borderRadius: 8`, `alignSelf: 'flex-start'`, `accessibilityLabel` set to `` `Membership tier: ${profile?.membership_tier ?? 'MEMBER'}` ``
+  - Text: `(profile?.membership_tier ?? 'MEMBER').toUpperCase()` — `COLOR_GOLD`, 11px, `fontWeight: '700'`, `letterSpacing: 2` (no `*` prefix)
+- Points: `COLOR_TEXT_MUTED`, 11px, `marginTop: 6` — `(profile?.points_balance ?? 0).toLocaleString() + ' PTS'`
 
 ---
 
 ## Section 2: Edit Profile Bottom Sheet
 
-**Trigger:** Tapping the `✎` edit icon opens the bottom sheet.
+**Trigger:** Tapping `"EDIT"` sets `editName` to `profile?.full_name ?? ''` (in the same `onPress` handler, before calling `present()`), then calls `editSheetRef.current?.present()`.
 
-**Ref:** `editSheetRef = useRef<BottomSheetModal>(null)` — `editSheetRef.current?.present()` on icon press.
+**Ref:** `editSheetRef = useRef<BottomSheetModal>(null)`
 
 **Sheet config:**
 - `snapPoints={['60%']}`
@@ -46,52 +48,52 @@ Rebuild the Profile screen with a polished header, edit-profile bottom sheet (na
 - `handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}`
 
 **State:**
-- `editName: string` — initialized to `profile?.full_name ?? ''` when sheet opens (use `onAnimate` or `useEffect` on sheet index)
+- `const [editName, setEditName] = useState<string>('')` — starts as empty string; overwritten with `profile?.full_name ?? ''` in the EDIT button's `onPress` before calling `present()`
 - `saving: boolean` — true while Supabase update is in-flight
+- `nameFocused: boolean` — toggles name input border color
 
-**Content (`padding: 24`):**
+**Content:** `<BottomSheetView style={styles.editSheetContent}>` is the immediate child of `<BottomSheetModal>` (same pattern as `charge.tsx`). `editSheetContent` style: `padding: 24`.
 
 1. **Avatar with camera overlay** (centered, `alignItems: 'center'`, `marginBottom: 24`):
    - Avatar circle: 80×80px, same style as header
    - Camera overlay: absolutely positioned bottom-right, 28×28px circle, `backgroundColor: COLOR_GOLD`, centered `CAM` text — `COLOR_NAVY`, 7px, `fontWeight: '800'`
-   - `accessibilityLabel: "Change profile photo"`, `accessibilityRole: "button"`
+   - Wrap avatar + overlay in a `Pressable` with `accessibilityLabel="Change profile photo"`, `accessibilityRole="button"`
    - On press: `Alert.alert('Coming Soon', 'Profile photo upload will be available in a future update.')`
 
 2. **Name input:**
-   - Label: `FULL NAME` — `COLOR_TEXT_MUTED`, 10px, `letterSpacing: 2`, `marginBottom: 8`
-   - `TextInput`: `value={editName}`, `onChangeText={setEditName}`, `placeholder="Your name"`, styled per CLAUDE.md (bg `COLOR_CARD`, border `rgba(255,255,255,0.12)`, focus border `COLOR_GOLD`, height 52, borderRadius 12, padding 16, text `COLOR_TEXT_PRIMARY`, placeholder `COLOR_TEXT_MUTED`)
-   - Focus border: use `onFocus`/`onBlur` state to toggle border color
+   - Label: `"FULL NAME"` — `COLOR_TEXT_MUTED`, 10px, `letterSpacing: 2`, `marginBottom: 8`
+   - `TextInput`: `value={editName}`, `onChangeText={setEditName}`, `placeholder="Your name"`, styled per CLAUDE.md (bg `COLOR_CARD`, `borderColor: nameFocused ? COLOR_GOLD : 'rgba(255,255,255,0.12)'`, height 52, borderRadius 12, padding 16, text `COLOR_TEXT_PRIMARY`, placeholder `COLOR_TEXT_MUTED`)
+   - `onFocus={() => setNameFocused(true)}`, `onBlur={() => setNameFocused(false)}`
 
 3. **SAVE button** (`marginTop: 24`):
    - Gold background, navy text, height 52, borderRadius 14, full width
    - `disabled={saving || editName.trim().length === 0}`
-   - While saving: `ActivityIndicator` (size "small", color `COLOR_NAVY`) in place of "SAVE" text
+   - While saving: `ActivityIndicator` (size "small", color `COLOR_NAVY`) in place of `"SAVE"` text
    - On press:
      ```ts
+     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
      setSaving(true);
-     const { error } = await supabase
-       .from('user_profiles')
-       .update({ full_name: editName.trim() })
-       .eq('id', session!.user.id);
-     setSaving(false);
-     if (error) {
-       Alert.alert('Error', 'Could not save changes.');
-       return;
+     try {
+       const { error } = await supabase
+         .from('user_profiles')
+         .update({ full_name: editName.trim() })
+         .eq('id', session!.user.id);
+       if (error) {
+         Alert.alert('Error', 'Could not save changes.');
+         return;
+       }
+       setProfile((prev) => prev ? { ...prev, full_name: editName.trim() } : prev);
+       editSheetRef.current?.dismiss();
+     } finally {
+       setSaving(false);
      }
-     setProfile((prev) => prev ? { ...prev, full_name: editName.trim() } : prev);
-     editSheetRef.current?.dismiss();
      ```
    - `accessibilityLabel="Save profile changes"`, `accessibilityState={{ disabled: saving || editName.trim().length === 0, busy: saving }}`
 
 4. **CANCEL link** (`marginTop: 16`, centered):
-   - `COLOR_TEXT_MUTED`, 13px — `"Cancel"`
+   - `Pressable` wrapping `Text` reading `"Cancel"` — `COLOR_TEXT_MUTED`, 13px
+   - `accessibilityLabel="Cancel profile edit"`, `accessibilityRole="button"`
    - On press: `editSheetRef.current?.dismiss()`
-
-**Input focus border implementation:**
-```ts
-const [nameFocused, setNameFocused] = useState(false);
-// TextInput borderColor: nameFocused ? COLOR_GOLD : 'rgba(255,255,255,0.12)'
-```
 
 ---
 
@@ -108,21 +110,25 @@ No structural changes to the tab bar. The animated underline and three tabs (UPC
 
 **Content (centered, `flex: 1`, `alignItems: 'center'`, `justifyContent: 'center'`, `padding: 32`):**
 
-1. **Icon:** `CARD` text label — `COLOR_TEXT_MUTED`, 11px, `letterSpacing: 2`, `marginBottom: 16`
+1. **Icon:** `"CARD"` text label — `COLOR_TEXT_MUTED`, 11px, `letterSpacing: 2`, `marginBottom: 16`
 2. **Primary text:** `"No payment methods saved"` — `COLOR_TEXT_PRIMARY`, 16px, `fontWeight: '700'`, `textAlign: 'center'`
-3. **Subtitle:** `"Add a card to speed up checkout"` — `COLOR_TEXT_MUTED`, 13px, `textAlign: 'center'`, `marginTop: 6`, `marginBottom: 32`
+3. **Subtitle:** `"Add a card to speed up checkout"` — `COLOR_TEXT_SECONDARY`, 13px, `textAlign: 'center'`, `marginTop: 6`, `marginBottom: 32`
 4. **ADD CARD button:** Gold background, navy text, height 52, borderRadius 14, `paddingHorizontal: 48`
    - `disabled={addingCard}`
-   - While `addingCard`: `ActivityIndicator` (size "small", color `COLOR_NAVY`) in place of "ADD CARD" text
+   - While `addingCard`: `ActivityIndicator` (size "small", color `COLOR_NAVY`) in place of `"ADD CARD"` text
    - `accessibilityLabel="Add payment card"`, `accessibilityState={{ disabled: addingCard, busy: addingCard }}`
    - On press:
      ```ts
      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
      setAddingCard(true);
-     await openPaymentSheet('mock_secret');
-     setAddingCard(false);
+     try {
+       const ok = await openPaymentSheet('mock_secret');
+       if (!ok) Alert.alert('Error', 'Could not open payment — please try again.');
+     } finally {
+       setAddingCard(false);
+     }
      ```
-   - `openPaymentSheet` from `lib/stripe.ts` already handles Expo Go guard (returns mock true in Expo Go; shows Alert in Expo Go context)
+   - `openPaymentSheet` from `lib/stripe.ts` handles Expo Go guard (returns `true` mock in Expo Go)
 
 ---
 
@@ -148,29 +154,29 @@ interface StayBookingRow {
 
 Use these in place of `(b: any)` in the `.map()` calls.
 
-**Sign-out button** — remove `position: 'absolute'`. The screen uses a `ScrollView` (wrapping all tab content). The sign-out button sits at the bottom of the `ScrollView` content with `marginTop: 32`, `marginHorizontal: 20`, `marginBottom: insets.bottom + 16`. This ensures it never overlaps booking cards.
-
 **Inline styles** — move `{ padding: 16, gap: 10 }` on the skeleton container to `StyleSheet`.
 
-**Screen structure change:** Wrap the tab content area in a `ScrollView` (or keep `FlatList` for bookings and place sign-out outside it). Since the payment tab and empty states are short, use `ScrollView` for Upcoming/Past content when no bookings, and keep `FlatList` only when there are bookings. Sign-out sits below the tab content in the outer `View`, not absolutely positioned.
-
-Actually — simpler approach: keep the `View`/`FlatList` structure but move sign-out to be a static element at the bottom of the outer container using `marginBottom` instead of `position: 'absolute'`. The outer container is `flex: 1` with `flexDirection: 'column'`. Tab content takes `flex: 1`. Sign-out is a static button below with safe area padding.
+**Screen structure:** The outer container is `flex: 1`, `flexDirection: 'column'`. Tab content area takes `flex: 1`. Sign-out button sits below the tab content area as a static element — no `position: 'absolute'`.
 
 ```
-<View style={styles.container}>           // flex: 1
+<View style={styles.container}>           // flex: 1, flexDirection: 'column'
   <StatusBar />
   <Header />
   <TabBar />
-  <View style={{ flex: 1 }}>             // tab content area
-    {/* bookings / payment */}
+  <View style={styles.tabContent}>       // flex: 1 — named style, not inline
+    {/* FlatList for bookings, or payment tab, or empty/loading states */}
   </View>
-  <Pressable style={styles.signOutBtn}>  // static, no absolute
+  <Pressable style={styles.signOutBtn}   // static, below tab content
+    accessibilityLabel="Sign out of account"
+    accessibilityRole="button">
     ...
   </Pressable>
 </View>
 ```
 
-Sign-out button style: `marginHorizontal: 20`, `marginBottom: insets.bottom + 16`, `marginTop: 8`, same visual style as before.
+`tabContent` style: `{ flex: 1 }` — defined in `StyleSheet.create`, not inline.
+
+Sign-out button style: `marginHorizontal: 20`, `marginBottom: insets.bottom + 16`, `marginTop: 8`, same visual style as before (no `position: 'absolute'`).
 
 ---
 
@@ -178,7 +184,7 @@ Sign-out button style: `marginHorizontal: 20`, `marginBottom: insets.bottom + 16
 
 - Profile fetch failure: show `'—'` for name, `'MEMBER'` for tier, `0` for points (current behavior, keep as-is)
 - Name save failure: `Alert.alert('Error', 'Could not save changes.')` — user stays in sheet
-- Stripe failure: `openPaymentSheet` returns `false` on failure — show `Alert.alert('Error', 'Could not open payment — please try again.')`
+- Stripe failure: `openPaymentSheet` returns `false` — show `Alert.alert('Error', 'Could not open payment — please try again.')`
 - Booking fetch failure: show empty state (current behavior, keep as-is)
 
 ---
@@ -189,7 +195,7 @@ Sign-out button style: `marginHorizontal: 20`, `marginBottom: insets.bottom + 16
 - No `any` types — use typed interfaces for Supabase row shapes
 - No inline styles on repeated elements — use `StyleSheet.create`
 - Reanimated 4 for the tab underline animation (already in place)
-- Haptic on all button presses: `Haptics.ImpactFeedbackStyle.Light`; Medium on sign-out
+- Haptic on all button/interactive presses: `Haptics.ImpactFeedbackStyle.Light`; Medium on sign-out
 - Accessibility: `accessibilityLabel` and `accessibilityRole` on all interactive elements
-- No emoji — `✎` is a Unicode symbol (U+270E), `*` is a plain character; `CAM` and `CARD` are text labels
-- `BottomSheetModalProvider` already wraps the screen (check — if not, wrap the return)
+- No emoji — `"EDIT"`, `"CAM"`, `"CARD"` are plain text labels; no Unicode symbol icons
+- Wrap screen return in `<BottomSheetModalProvider>` (same pattern as `charge.tsx`)
