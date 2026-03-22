@@ -260,15 +260,89 @@ export default function Shop() {
           </BottomSheetView>
         </BottomSheetModal>
 
-        {/* Cart bottom sheet — stubbed, filled in Task 4 */}
+        {/* Cart / Checkout bottom sheet */}
         <BottomSheetModal
           ref={cartSheetRef}
           snapPoints={['70%']}
           backgroundStyle={styles.sheetBg}
           handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
         >
+          {/* Header — plain View, not BottomSheetView */}
           <View style={styles.cartHeader}>
             <Text style={styles.cartTitle}>YOUR CART</Text>
+          </View>
+
+          {/* Item list — direct child of BottomSheetModal */}
+          <BottomSheetFlatList
+            data={shopItems}
+            keyExtractor={(i) => i.id}
+            style={{ flex: 1 }}
+            ListEmptyComponent={
+              <View style={styles.cartEmpty}>
+                <Text style={styles.cartEmptyText}>Your cart is empty</Text>
+              </View>
+            }
+            renderItem={({ item }) => (
+              <View style={styles.cartRow}>
+                <View style={styles.cartRowLeft}>
+                  <Text style={styles.cartItemName}>{item.name}</Text>
+                  <Text style={styles.cartItemQty}>x{item.qty}</Text>
+                </View>
+                <View style={styles.cartRowRight}>
+                  <Text style={styles.cartItemTotal}>${(item.price * item.qty).toFixed(2)}</Text>
+                  <Pressable
+                    style={styles.removeBtn}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      removeShopItem(item.id);
+                    }}
+                    accessibilityLabel="Remove item"
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.removeBtnText}>✕</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+          />
+
+          {/* Footer — plain View, not BottomSheetView */}
+          <View style={[styles.cartFooter, { paddingBottom: insets.bottom + 24 }]}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>TOTAL</Text>
+              <Text style={styles.totalValue}>
+                ${shopItems.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2)}
+              </Text>
+            </View>
+            <Pressable
+              style={[styles.checkoutBtn, (checkingOut || shopItems.length === 0) && styles.checkoutBtnDisabled]}
+              disabled={checkingOut || shopItems.length === 0}
+              accessibilityLabel="Checkout"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: checkingOut || shopItems.length === 0, busy: checkingOut }}
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                setCheckingOut(true);
+                try {
+                  const ok = await openPaymentSheet('mock_secret');
+                  if (!ok) {
+                    Alert.alert('Error', 'Could not process payment — please try again.');
+                    return;
+                  }
+                  clearShopCart();
+                  cartSheetRef.current?.dismiss();
+                  Alert.alert('Order placed!', "We'll have it ready for you shortly.");
+                } finally {
+                  setCheckingOut(false);
+                }
+              }}
+            >
+              {checkingOut ? (
+                <ActivityIndicator size="small" color={COLOR_NAVY} />
+              ) : (
+                <Text style={styles.checkoutText}>CHECKOUT</Text>
+              )}
+            </Pressable>
           </View>
         </BottomSheetModal>
       </View>
@@ -407,4 +481,45 @@ const styles = StyleSheet.create({
   addCartText: { color: COLOR_NAVY, fontWeight: '700', fontSize: 13, letterSpacing: 1 },
   cartHeader: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 12 },
   cartTitle: { fontFamily: FONT_BEBAS, fontSize: 24, color: COLOR_TEXT_PRIMARY, letterSpacing: 2 },
+  cartRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  cartRowLeft: { flex: 1 },
+  cartRowRight: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cartItemName: { color: COLOR_TEXT_PRIMARY, fontSize: 14 },
+  cartItemQty: { color: COLOR_TEXT_MUTED, fontSize: 12, marginTop: 2 },
+  cartItemTotal: { color: COLOR_GOLD, fontSize: 14, fontWeight: '700' },
+  removeBtn: { padding: 4 },
+  removeBtnText: { color: COLOR_TEXT_MUTED, fontSize: 16 },
+  cartEmpty: { alignItems: 'center', paddingVertical: 48 },
+  cartEmptyText: { color: COLOR_TEXT_MUTED, fontSize: 14 },
+  cartFooter: {
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  totalLabel: { color: COLOR_TEXT_MUTED, fontSize: 11, letterSpacing: 2 },
+  totalValue: { color: COLOR_GOLD, fontSize: 18, fontWeight: '700' },
+  checkoutBtn: {
+    marginTop: 16,
+    backgroundColor: COLOR_GOLD,
+    borderRadius: 14,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkoutBtnDisabled: { opacity: 0.4 },
+  checkoutText: { color: COLOR_NAVY, fontWeight: '700', fontSize: 13, letterSpacing: 1 },
 });
