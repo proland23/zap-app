@@ -74,12 +74,10 @@ import { openPaymentSheet } from '../../lib/stripe';
 import { useCartStore } from '../../lib/cart-store';
 import CartBadge from '../../components/CartBadge';
 import {
-  COLOR_NAVY, COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD, COLOR_CYAN, COLOR_PURPLE,
+  COLOR_NAVY, COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD, COLOR_CYAN, COLOR_PURPLE, COLOR_GREEN,
   COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS,
 } from '../../lib/constants';
 ```
-
-**`COLOR_GREEN`** (`#1F9B6B`) is not exported from `lib/constants`. Define it locally: `const COLOR_GREEN = '#1F9B6B';`
 
 **State:**
 ```ts
@@ -126,7 +124,7 @@ const [tabBarWidth, setTabBarWidth] = useState(0);
 - Underline translate: `underlineX.value = withTiming(idx * (tabBarWidth / 4), { duration: 200 })` on tab press
 - Haptic `Light` on each tab press
 - `tabText`: `COLOR_TEXT_MUTED`, 11px, `letterSpacing: 1.5`; active: `COLOR_GOLD`
-- Underline element: `<Animated.View style={[styles.underline, underlineStyle]} />` where `underlineStyle = useAnimatedStyle(() => ({ transform: [{ translateX: underlineX.value }] }))`. Style: `height: 2`, `backgroundColor: COLOR_GOLD`, `position: 'absolute'`, `bottom: 0`, `width: tabBarWidth / 4`
+- Underline element: `<Animated.View style={[styles.underline, { width: tabBarWidth / 4 }, underlineStyle]} />`. `underlineStyle = useAnimatedStyle(() => ({ transform: [{ translateX: underlineX.value }] }))`. The `width` is applied inline (not in `StyleSheet.create`) because `tabBarWidth` is runtime state — same pattern as `paddingBottom: insets.bottom + 24`. Base `styles.underline`: `height: 2`, `backgroundColor: COLOR_GOLD`, `position: 'absolute'`, `bottom: 0`
 
 **Content area (`flex: 1`):** Renders one of three states — error, loading, or product grid.
 
