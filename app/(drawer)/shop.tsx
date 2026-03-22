@@ -184,7 +184,7 @@ export default function Shop() {
           />
         )}
 
-        {/* Detail bottom sheet — stubbed, filled in Task 3 */}
+        {/* Product detail bottom sheet */}
         <BottomSheetModal
           ref={detailSheetRef}
           snapPoints={['65%']}
@@ -193,7 +193,69 @@ export default function Shop() {
         >
           <BottomSheetView style={styles.detailContent}>
             {selectedItem && (
-              <Text style={styles.detailName}>{selectedItem.name}</Text>
+              <>
+                {/* Accent icon square */}
+                <View style={[
+                  styles.detailIcon,
+                  { backgroundColor: CATEGORY_META[selectedItem.category].color + '1A' },
+                ]}>
+                  <Text style={[styles.detailIconLabel, { color: CATEGORY_META[selectedItem.category].color }]}>
+                    {CATEGORY_META[selectedItem.category].iconLabel}
+                  </Text>
+                </View>
+
+                {/* Name, price, description */}
+                <Text style={styles.detailName}>{selectedItem.name}</Text>
+                <Text style={styles.detailPrice}>${selectedItem.price.toFixed(2)}</Text>
+                <Text style={styles.detailDesc}>{selectedItem.description}</Text>
+
+                {/* Quantity stepper */}
+                <View style={styles.stepper}>
+                  <Pressable
+                    style={[styles.stepBtn, qty === 1 && styles.stepBtnDisabled]}
+                    disabled={qty === 1}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setQty((q) => Math.max(1, q - 1));
+                    }}
+                    accessibilityLabel="Decrease quantity"
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.stepBtnText}>−</Text>
+                  </Pressable>
+                  <Text style={styles.stepCount}>{qty}</Text>
+                  <Pressable
+                    style={[styles.stepBtn, qty === 10 && styles.stepBtnDisabled]}
+                    disabled={qty === 10}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setQty((q) => Math.min(10, q + 1));
+                    }}
+                    accessibilityLabel="Increase quantity"
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.stepBtnText}>+</Text>
+                  </Pressable>
+                </View>
+
+                {/* ADD TO CART */}
+                <Pressable
+                  style={[styles.addCartBtn, !selectedItem.in_stock && styles.addCartBtnDisabled]}
+                  disabled={!selectedItem.in_stock}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    addShopItem(
+                      { id: selectedItem.id, name: selectedItem.name, price: selectedItem.price },
+                      qty
+                    );
+                    detailSheetRef.current?.dismiss();
+                  }}
+                  accessibilityLabel="Add to cart"
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.addCartText}>ADD TO CART</Text>
+                </Pressable>
+              </>
             )}
           </BottomSheetView>
         </BottomSheetModal>
@@ -277,7 +339,72 @@ const styles = StyleSheet.create({
   outOfStock: { color: COLOR_TEXT_MUTED, fontSize: 9, letterSpacing: 1, marginTop: 4 },
   sheetBg: { backgroundColor: COLOR_ELEVATED },
   detailContent: { padding: 24 },
-  detailName: { color: COLOR_TEXT_PRIMARY, fontSize: 22, fontWeight: '800', textAlign: 'center' },
+  detailIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailIconLabel: { fontSize: 14, fontWeight: '800', letterSpacing: 1 },
+  detailName: {
+    color: COLOR_TEXT_PRIMARY,
+    fontSize: 22,
+    fontWeight: '800',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  detailPrice: {
+    color: COLOR_GOLD,
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  detailDesc: {
+    color: COLOR_TEXT_SECONDARY,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  stepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 24,
+    marginTop: 24,
+  },
+  stepBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLOR_ELEVATED,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBtnDisabled: { opacity: 0.35 },
+  stepBtnText: { color: COLOR_TEXT_PRIMARY, fontSize: 20 },
+  stepCount: {
+    color: COLOR_TEXT_PRIMARY,
+    fontSize: 20,
+    fontWeight: '700',
+    minWidth: 32,
+    textAlign: 'center',
+  },
+  addCartBtn: {
+    marginTop: 24,
+    backgroundColor: COLOR_GOLD,
+    borderRadius: 14,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addCartBtnDisabled: { opacity: 0.4 },
+  addCartText: { color: COLOR_NAVY, fontWeight: '700', fontSize: 13, letterSpacing: 1 },
   cartHeader: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 12 },
   cartTitle: { fontFamily: FONT_BEBAS, fontSize: 24, color: COLOR_TEXT_PRIMARY, letterSpacing: 2 },
 });
