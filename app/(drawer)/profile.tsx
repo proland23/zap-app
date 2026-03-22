@@ -183,7 +183,94 @@ export default function Profile() {
           <Text style={styles.signOutText}>SIGN OUT</Text>
         </Pressable>
 
-        {/* Edit sheet — added in Task 2 */}
+        {/* Edit profile bottom sheet */}
+        <BottomSheetModal
+          ref={editSheetRef}
+          snapPoints={['60%']}
+          backgroundStyle={styles.sheetBg}
+          handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+        >
+          <BottomSheetView style={styles.editSheetContent}>
+            {/* Avatar with CAM overlay */}
+            <Pressable
+              style={styles.editAvatarWrapper}
+              onPress={() =>
+                Alert.alert('Coming Soon', 'Profile photo upload will be available in a future update.')
+              }
+              accessibilityLabel="Change profile photo"
+              accessibilityRole="button"
+            >
+              <View style={styles.editAvatar}>
+                <Text style={styles.editInitials}>{initials}</Text>
+              </View>
+              <View style={styles.camOverlay}>
+                <Text style={styles.camText}>CAM</Text>
+              </View>
+            </Pressable>
+
+            {/* Name input */}
+            <Text style={styles.inputLabel}>FULL NAME</Text>
+            <TextInput
+              style={[
+                styles.nameInput,
+                { borderColor: nameFocused ? COLOR_GOLD : 'rgba(255,255,255,0.12)' },
+              ]}
+              value={editName}
+              onChangeText={setEditName}
+              placeholder="Your name"
+              placeholderTextColor={COLOR_TEXT_MUTED}
+              onFocus={() => setNameFocused(true)}
+              onBlur={() => setNameFocused(false)}
+            />
+
+            {/* SAVE button */}
+            <Pressable
+              style={[
+                styles.saveBtn,
+                (saving || editName.trim().length === 0) && styles.saveBtnDisabled,
+              ]}
+              disabled={saving || editName.trim().length === 0}
+              accessibilityLabel="Save profile changes"
+              accessibilityState={{ disabled: saving || editName.trim().length === 0, busy: saving }}
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSaving(true);
+                try {
+                  const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ full_name: editName.trim() })
+                    .eq('id', session!.user.id);
+                  if (error) {
+                    Alert.alert('Error', 'Could not save changes.');
+                    return;
+                  }
+                  setProfile((prev) =>
+                    prev ? { ...prev, full_name: editName.trim() } : prev
+                  );
+                  editSheetRef.current?.dismiss();
+                } finally {
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving ? (
+                <ActivityIndicator size="small" color={COLOR_NAVY} />
+              ) : (
+                <Text style={styles.saveBtnText}>SAVE</Text>
+              )}
+            </Pressable>
+
+            {/* CANCEL */}
+            <Pressable
+              style={styles.cancelBtn}
+              onPress={() => editSheetRef.current?.dismiss()}
+              accessibilityLabel="Cancel profile edit"
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </Pressable>
+          </BottomSheetView>
+        </BottomSheetModal>
       </View>
     </BottomSheetModalProvider>
   );
@@ -283,4 +370,61 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   signOutText: { color: COLOR_TEXT_MUTED, fontSize: 13, letterSpacing: 2 },
+  sheetBg: { backgroundColor: COLOR_ELEVATED },
+  editSheetContent: { padding: 24 },
+  editAvatarWrapper: {
+    alignSelf: 'center',
+    marginBottom: 24,
+    position: 'relative',
+  },
+  editAvatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLOR_ELEVATED,
+    borderWidth: 2,
+    borderColor: 'rgba(245,166,35,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editInitials: { color: COLOR_GOLD, fontFamily: FONT_BEBAS, fontSize: 30 },
+  camOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLOR_GOLD,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  camText: { color: COLOR_NAVY, fontSize: 7, fontWeight: '800' },
+  inputLabel: {
+    color: COLOR_TEXT_MUTED,
+    fontSize: 10,
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  nameInput: {
+    backgroundColor: COLOR_CARD,
+    borderWidth: 1,
+    borderRadius: 12,
+    height: 52,
+    paddingHorizontal: 16,
+    color: COLOR_TEXT_PRIMARY,
+    fontSize: 15,
+  },
+  saveBtn: {
+    marginTop: 24,
+    backgroundColor: COLOR_GOLD,
+    borderRadius: 14,
+    height: 52,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtnDisabled: { opacity: 0.4 },
+  saveBtnText: { color: COLOR_NAVY, fontWeight: '700', fontSize: 13, letterSpacing: 1 },
+  cancelBtn: { marginTop: 16, alignItems: 'center' },
+  cancelText: { color: COLOR_TEXT_MUTED, fontSize: 13 },
 });
