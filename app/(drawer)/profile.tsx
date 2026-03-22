@@ -143,8 +143,33 @@ export default function Profile() {
         {/* Tab content */}
         <View style={styles.tabContent}>
           {activeTab === 'payment' ? (
-            <View style={styles.paymentPlaceholder}>
-              <Text style={styles.emptyText}>Payment methods available after account setup</Text>
+            <View style={styles.paymentEmpty}>
+              <Text style={styles.paymentIcon}>CARD</Text>
+              <Text style={styles.paymentTitle}>No payment methods saved</Text>
+              <Text style={styles.paymentSubtitle}>Add a card to speed up checkout</Text>
+              <Pressable
+                style={[styles.addCardBtn, addingCard && styles.addCardBtnDisabled]}
+                disabled={addingCard}
+                accessibilityLabel="Add payment card"
+                accessibilityRole="button"
+                accessibilityState={{ disabled: addingCard, busy: addingCard }}
+                onPress={async () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setAddingCard(true);
+                  try {
+                    const ok = await openPaymentSheet('mock_secret');
+                    if (!ok) Alert.alert('Error', 'Could not open payment — please try again.');
+                  } finally {
+                    setAddingCard(false);
+                  }
+                }}
+              >
+                {addingCard ? (
+                  <ActivityIndicator size="small" color={COLOR_NAVY} />
+                ) : (
+                  <Text style={styles.addCardText}>ADD CARD</Text>
+                )}
+              </Pressable>
             </View>
           ) : loading ? (
             <View style={{ padding: 16, gap: 10 }}>
@@ -355,7 +380,41 @@ const styles = StyleSheet.create({
   skeletonRow: { height: 70, backgroundColor: COLOR_ELEVATED, borderRadius: 12 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: COLOR_TEXT_MUTED, fontSize: 14, textAlign: 'center', padding: 20 },
-  paymentPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  paymentEmpty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  paymentIcon: {
+    color: COLOR_TEXT_MUTED,
+    fontSize: 11,
+    letterSpacing: 2,
+    marginBottom: 16,
+  },
+  paymentTitle: {
+    color: COLOR_TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  paymentSubtitle: {
+    color: COLOR_TEXT_SECONDARY,
+    fontSize: 13,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 32,
+  },
+  addCardBtn: {
+    backgroundColor: COLOR_GOLD,
+    borderRadius: 14,
+    height: 52,
+    paddingHorizontal: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addCardBtnDisabled: { opacity: 0.4 },
+  addCardText: { color: COLOR_NAVY, fontWeight: '700', fontSize: 13, letterSpacing: 1 },
   bookingCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: COLOR_CARD, borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' },
   bookingLeft: { gap: 3 },
   bookingType: { color: COLOR_GOLD, fontSize: 11, letterSpacing: 1.5, fontWeight: '700' },
