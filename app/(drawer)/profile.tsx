@@ -231,15 +231,17 @@ export default function Profile() {
               ]}
               disabled={saving || editName.trim().length === 0}
               accessibilityLabel="Save profile changes"
+              accessibilityRole="button"
               accessibilityState={{ disabled: saving || editName.trim().length === 0, busy: saving }}
               onPress={async () => {
+                if (!session) return;
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setSaving(true);
                 try {
                   const { error } = await supabase
                     .from('user_profiles')
                     .update({ full_name: editName.trim() })
-                    .eq('id', session!.user.id);
+                    .eq('id', session.user.id);
                   if (error) {
                     Alert.alert('Error', 'Could not save changes.');
                     return;
@@ -248,6 +250,8 @@ export default function Profile() {
                     prev ? { ...prev, full_name: editName.trim() } : prev
                   );
                   editSheetRef.current?.dismiss();
+                } catch {
+                  Alert.alert('Error', 'Could not save changes.');
                 } finally {
                   setSaving(false);
                 }
@@ -405,6 +409,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 2,
     marginBottom: 8,
+    textTransform: 'uppercase',
   },
   nameInput: {
     backgroundColor: COLOR_CARD,
