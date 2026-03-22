@@ -189,7 +189,7 @@ export default function Shop() {
           ref={detailSheetRef}
           snapPoints={['65%']}
           backgroundStyle={styles.sheetBg}
-          handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+          handleIndicatorStyle={styles.sheetHandle}
         >
           <BottomSheetView style={styles.detailContent}>
             {selectedItem && (
@@ -265,7 +265,7 @@ export default function Shop() {
           ref={cartSheetRef}
           snapPoints={['70%']}
           backgroundStyle={styles.sheetBg}
-          handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+          handleIndicatorStyle={styles.sheetHandle}
         >
           {/* Header — plain View, not BottomSheetView */}
           <View style={styles.cartHeader}>
@@ -276,7 +276,7 @@ export default function Shop() {
           <BottomSheetFlatList
             data={shopItems}
             keyExtractor={(i) => i.id}
-            style={{ flex: 1 }}
+            style={styles.cartList}
             ListEmptyComponent={
               <View style={styles.cartEmpty}>
                 <Text style={styles.cartEmptyText}>Your cart is empty</Text>
@@ -412,6 +412,8 @@ const styles = StyleSheet.create({
   cardPrice: { color: COLOR_GOLD, fontSize: 15, fontWeight: '700', marginTop: 4 },
   outOfStock: { color: COLOR_TEXT_MUTED, fontSize: 9, letterSpacing: 1, marginTop: 4 },
   sheetBg: { backgroundColor: COLOR_ELEVATED },
+  sheetHandle: { backgroundColor: 'rgba(255,255,255,0.2)' },
+  cartList: { flex: 1 },
   detailContent: { padding: 24 },
   detailIcon: {
     width: 64,
