@@ -13,10 +13,10 @@ import {
 } from '@gorhom/bottom-sheet';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../lib/session-context';
-import { openPaymentSheet } from '../../lib/stripe'; // used in Task 3 (Payment Tab)
+import { openPaymentSheet } from '../../lib/stripe';
 import {
   COLOR_NAVY, COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS, // COLOR_TEXT_SECONDARY used in Tasks 2 & 3
+  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS,
 } from '../../lib/constants';
 
 type TabId = 'upcoming' | 'past' | 'payment';
@@ -27,6 +27,20 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 interface Booking { id: string; type: string; date: string; detail: string; amount: number; }
+
+interface ChargeBookingRow {
+  id: string;
+  start_time: string;
+  amount_paid: number;
+  status: string;
+}
+
+interface StayBookingRow {
+  id: string;
+  check_in: string;
+  amount_paid: number;
+  status: string;
+}
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
@@ -63,8 +77,8 @@ export default function Profile() {
       supabase.from('stay_bookings').select('id, check_in, amount_paid, status').eq('user_id', session.user.id),
     ]).then(([chargeRes, stayRes]) => {
       const combined: Booking[] = [
-        ...(chargeRes.data ?? []).map((b: any) => ({ id: b.id, type: 'Charge', date: b.start_time, detail: 'EV Charging', amount: b.amount_paid })),
-        ...(stayRes.data ?? []).map((b: any) => ({ id: b.id, type: 'Stay', date: b.check_in, detail: 'Lodging', amount: b.amount_paid })),
+        ...(chargeRes.data ?? []).map((b: ChargeBookingRow) => ({ id: b.id, type: 'Charge', date: b.start_time, detail: 'EV Charging', amount: b.amount_paid })),
+        ...(stayRes.data ?? []).map((b: StayBookingRow) => ({ id: b.id, type: 'Stay', date: b.check_in, detail: 'Lodging', amount: b.amount_paid })),
       ].filter((b) => isUpcoming ? b.date >= now.slice(0, 10) : b.date < now.slice(0, 10))
         .sort((a, z) => isUpcoming ? a.date.localeCompare(z.date) : z.date.localeCompare(a.date));
       setBookings(combined);
@@ -172,7 +186,7 @@ export default function Profile() {
               </Pressable>
             </View>
           ) : loading ? (
-            <View style={{ padding: 16, gap: 10 }}>
+            <View style={styles.skeletonContainer}>
               {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
             </View>
           ) : bookings.length === 0 ? (
@@ -377,6 +391,7 @@ const styles = StyleSheet.create({
   tabText: { color: COLOR_TEXT_MUTED, fontSize: 11, letterSpacing: 1.5 },
   tabTextActive: { color: COLOR_GOLD },
   underline: { position: 'absolute', bottom: 0, height: 2, backgroundColor: COLOR_GOLD, borderRadius: 1 },
+  skeletonContainer: { padding: 16, gap: 10 },
   skeletonRow: { height: 70, backgroundColor: COLOR_ELEVATED, borderRadius: 12 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: COLOR_TEXT_MUTED, fontSize: 14, textAlign: 'center', padding: 20 },
