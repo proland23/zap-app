@@ -13,10 +13,10 @@ import {
 } from '@gorhom/bottom-sheet';
 import { supabase } from '../../lib/supabase';
 import { useSession } from '../../lib/session-context';
-import { openPaymentSheet } from '../../lib/stripe';
+import { openPaymentSheet } from '../../lib/stripe'; // used in Task 3 (Payment Tab)
 import {
   COLOR_NAVY, COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD,
-  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS,
+  COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS, // COLOR_TEXT_SECONDARY used in Tasks 2 & 3
 } from '../../lib/constants';
 
 type TabId = 'upcoming' | 'past' | 'payment';
