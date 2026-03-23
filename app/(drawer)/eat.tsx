@@ -37,7 +37,7 @@ export default function Eat() {
   const TAB_WIDTH = 88;
 
   useEffect(() => {
-    supaQuery(supabase.from('menu_items').select('*')).then((data) => { if (data) setMenuItems(data); setLoading(false); });
+    supaQuery(supabase.from('menu_items').select('*')).then((data) => { if (!data) { setLoading(false); return; } setMenuItems(data); setLoading(false); });
   }, []);
 
   const filtered = menuItems.filter((i) => i.category === activeCategory);

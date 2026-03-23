@@ -36,7 +36,7 @@ export default function DrawerLayout() {
     const { OneSignal } = require('react-native-onesignal');
     OneSignal.initialize(process.env.EXPO_PUBLIC_ONESIGNAL_APP_ID ?? '');
     OneSignal.Notifications.requestPermission(true);
-    OneSignal.User.pushSubscription.addEventListener('change', (sub: any) => {
+    OneSignal.User.pushSubscription.addEventListener('change', (sub: { current?: { id?: string } }) => {
       if (sub.current?.id) {
         supaQuery(
           supabase.from('user_profiles')

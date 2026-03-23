@@ -18,7 +18,7 @@ export default function Stay() {
 
   useEffect(() => {
     supaQuery(supabase.from('lodging_units').select('id, name, nightly_rate, is_available'))
-      .then((data) => { if (data) setUnits(data); setLoading(false); });
+      .then((data) => { if (!data) { setLoading(false); return; } setUnits(data); setLoading(false); });
   }, []);
 
   return (

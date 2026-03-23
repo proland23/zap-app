@@ -242,9 +242,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     margin: 8,
   },
-  errorContainer: { alignItems: 'center', paddingVertical: 16, paddingHorizontal: 16 },
-  errorText: { color: COLOR_RED, fontSize: 13, marginBottom: 8, textAlign: 'center' },
-  retryText: { color: COLOR_GOLD, fontSize: 13, fontWeight: '600' },
   sectionLabel: {
     color: COLOR_TEXT_MUTED,
     fontSize: 10,

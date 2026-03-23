@@ -353,9 +353,6 @@ const styles = StyleSheet.create({
   tabText: { color: COLOR_TEXT_MUTED, fontSize: 11, letterSpacing: 1.5 },
   tabTextActive: { color: COLOR_GOLD },
   underline: { position: 'absolute', bottom: 0, height: 2, backgroundColor: COLOR_GOLD },
-  errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  errorText: { color: COLOR_TEXT_MUTED, fontSize: 13, textAlign: 'center' },
-  retryText: { color: COLOR_GOLD, fontSize: 13, fontWeight: '600', marginTop: 8 },
   skeletonGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
