@@ -1,33 +1,24 @@
 // app/(drawer)/_layout.tsx
 import { useEffect, useState } from 'react';
 import { Drawer } from 'expo-router/drawer';
-import { useRouter } from 'expo-router';
+import { Redirect } from 'expo-router';
 import Constants from 'expo-constants';
 import { useSession } from '../../lib/session-context';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import { initializeStripe } from '../../lib/stripe';
 import DrawerContent from '../../components/DrawerContent';
 
 export default function DrawerLayout() {
   const { session, loading } = useSession();
-  const router = useRouter();
   const [userName, setUserName] = useState<string | undefined>();
   const [points, setPoints] = useState(0);
-
-  // Session guard
-  useEffect(() => {
-    if (!loading && !session) router.replace('/login');
-  }, [loading, session]);
 
   // Fetch user profile for drawer
   useEffect(() => {
     if (!session) return;
-    supabase
-      .from('user_profiles')
-      .select('full_name, points_balance')
-      .eq('id', session.user.id)
-      .single()
-      .then(({ data }) => {
+    supaQuery(supabase.from('user_profiles').select('full_name, points_balance').eq('id', session.user.id).single())
+      .then((data) => {
         if (data) {
           setUserName(data.full_name);
           setPoints(data.points_balance ?? 0);
@@ -47,14 +38,18 @@ export default function DrawerLayout() {
     OneSignal.Notifications.requestPermission(true);
     OneSignal.User.pushSubscription.addEventListener('change', (sub: any) => {
       if (sub.current?.id) {
-        supabase.from('user_profiles')
-          .update({ onesignal_player_id: sub.current.id })
-          .eq('id', session.user.id);
+        supaQuery(
+          supabase.from('user_profiles')
+            .update({ onesignal_player_id: sub.current.id })
+            .eq('id', session.user.id),
+          { silent: true }
+        );
       }
     });
   }, [session]);
 
-  if (loading || !session) return null;
+  if (loading) return null;
+  if (!session) return <Redirect href="/login" />;
 
   return (
     <Drawer
@@ -66,6 +61,7 @@ export default function DrawerLayout() {
         drawerStyle: { width: 260, backgroundColor: 'transparent' },
         overlayColor: 'rgba(5,13,24,0.75)',
         swipeEdgeWidth: 60,
+        unmountOnBlur: true,
       }}
     >
       <Drawer.Screen name="index" />

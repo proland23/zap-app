@@ -10,6 +10,7 @@ import {
   BottomSheetModal, BottomSheetModalProvider, BottomSheetView, BottomSheetFlatList,
 } from '@gorhom/bottom-sheet';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import { openPaymentSheet } from '../../lib/stripe';
 import { useCartStore } from '../../lib/cart-store';
 import CartBadge from '../../components/CartBadge';
@@ -49,7 +50,6 @@ export default function Shop() {
 
   const [items, setItems] = useState<ShopItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<ShopCategory>('clothing');
   const [selectedItem, setSelectedItem] = useState<ShopItem | null>(null);
   const [qty, setQty] = useState(1);
@@ -63,16 +63,8 @@ export default function Shop() {
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
-    setFetchError(null);
-    const { data, error } = await supabase
-      .from('shop_items')
-      .select('id, name, description, price, category, in_stock')
-      .order('name');
-    if (error || !data) {
-      setFetchError('Could not load shop items.');
-      setLoading(false);
-      return;
-    }
+    const data = await supaQuery(supabase.from('shop_items').select('id, name, description, price, category, in_stock').order('name'));
+    if (!data) { setLoading(false); return; } // toast already fired
     setItems(data);
     setLoading(false);
   }, []);
@@ -129,18 +121,7 @@ export default function Shop() {
         </View>
 
         {/* Content */}
-        {fetchError ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{fetchError}</Text>
-            <Pressable
-              onPress={fetchItems}
-              accessibilityLabel="Retry loading shop items"
-              accessibilityRole="button"
-            >
-              <Text style={styles.retryText}>Retry</Text>
-            </Pressable>
-          </View>
-        ) : loading ? (
+        {loading ? (
           <View style={styles.skeletonGrid}>
             {[0, 1, 2, 3].map((i) => <View key={i} style={styles.skeletonCard} />)}
           </View>

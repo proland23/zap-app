@@ -4,6 +4,7 @@ import { View, Text, FlatList, StyleSheet, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import LodgingCard from '../../components/LodgingCard';
 import { COLOR_NAVY, COLOR_ELEVATED, COLOR_TEXT_MUTED, FONT_BEBAS } from '../../lib/constants';
 
@@ -16,8 +17,8 @@ export default function Stay() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('lodging_units').select('id, name, nightly_rate, is_available')
-      .then(({ data }) => { if (data) setUnits(data); setLoading(false); });
+    supaQuery(supabase.from('lodging_units').select('id, name, nightly_rate, is_available'))
+      .then((data) => { if (data) setUnits(data); setLoading(false); });
   }, []);
 
   return (

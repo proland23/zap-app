@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import { openPaymentSheet } from '../../lib/stripe';
 import { useSession } from '../../lib/session-context';
 import {
@@ -34,8 +35,8 @@ export default function StayDetail() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.from('lodging_units').select('*').eq('id', id).single()
-      .then(({ data }) => { if (data) setUnit(data); });
+    supaQuery(supabase.from('lodging_units').select('*').eq('id', id).single())
+      .then((data) => { if (data) setUnit(data); });
   }, [id]);
 
   const nights = daysBetween(checkIn, checkOut);
@@ -50,16 +51,19 @@ export default function StayDetail() {
       if (!success) { setLoading(false); return; }
     }
     const checkin_code = generateCheckinCode();
-    await supabase.from('stay_bookings').insert({
-      user_id: session.user.id,
-      unit_id: unit.id,
-      check_in: checkIn.toISOString().split('T')[0],
-      check_out: checkOut.toISOString().split('T')[0],
-      amount_paid: total,
-      checkin_code,
-      status: 'confirmed',
-    });
+    const booking = await supaQuery(
+      supabase.from('stay_bookings').insert({
+        user_id: session.user.id,
+        unit_id: unit.id,
+        check_in: checkIn.toISOString().split('T')[0],
+        check_out: checkOut.toISOString().split('T')[0],
+        amount_paid: total,
+        checkin_code,
+        status: 'confirmed',
+      }).select('id').single()
+    );
     setLoading(false);
+    if (!booking) return; // toast already fired by supaQuery
     Alert.alert('Booked!', `Your check-in code is ${checkin_code}`, [{ text: 'OK', onPress: () => router.back() }]);
   };
 

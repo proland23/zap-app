@@ -1,9 +1,11 @@
 // app/(drawer)/rewards.tsx
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, Text, Alert, StyleSheet, StatusBar, ScrollView,
+  View, Text, StyleSheet, StatusBar, ScrollView,
   TextInput, Pressable,
 } from 'react-native';
+import { supaQuery } from '../../lib/supabase-helpers';
+import { useToastStore } from '../../lib/toast-store';
 import Animated, {
   useSharedValue,
   useDerivedValue,
@@ -57,7 +59,6 @@ export default function Rewards() {
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [redeemingId, setRedeemingId] = useState<string | null>(null);
   const redeemingIdRef = useRef<string | null>(null);
 
@@ -82,30 +83,16 @@ export default function Rewards() {
   const fetchData = useCallback(async () => {
     if (!session) return;
     setLoading(true);  // re-show skeletons on retry too
-    setFetchError(null);
 
-    const [profileRes, txRes] = await Promise.all([
-      supabase
-        .from('user_profiles')
-        .select('points_balance')
-        .eq('id', session.user.id)
-        .single(),
-      supabase
-        .from('points_transactions')
-        .select('id, delta, reason, created_at')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false })
-        .limit(20),
+    const [profile, txData] = await Promise.all([
+      supaQuery(supabase.from('user_profiles').select('points_balance').eq('id', session.user.id).single()),
+      supaQuery(supabase.from('points_transactions').select('id, delta, reason, created_at').eq('user_id', session.user.id).order('created_at', { ascending: false }).limit(20)),
     ]);
 
-    if (profileRes.error || !profileRes.data) {
-      setFetchError('Could not load your balance.');
-      setLoading(false);
-      return;
-    }
+    if (!profile) { setLoading(false); return; } // toast already fired
 
-    setBalance(profileRes.data.points_balance);
-    setTransactions(txRes.data ?? []);
+    setBalance(profile.points_balance);
+    setTransactions(txData ?? []);
     setLoading(false);
   }, [session]);
 
@@ -115,32 +102,25 @@ export default function Rewards() {
     if (redeemingIdRef.current !== null) return; // block concurrent redemptions
     if (balance === null || balance < item.cost) return;
 
-    Alert.alert(
-      `Redeem ${item.label}?`,
-      `This will deduct ${item.cost.toLocaleString()} points from your balance.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Redeem',
-          onPress: async () => {
-            redeemingIdRef.current = item.id;
-            setRedeemingId(item.id);
-            const { error } = await supabase.rpc('redeem_points', {
-              uid: session!.user.id,
-              cost: item.cost,
-              reward: item.id,
-            });
-            redeemingIdRef.current = null;
-            setRedeemingId(null);
-            if (error) {
-              Alert.alert('Error', 'Could not redeem — please try again.');
-              return;
-            }
-            fetchData();
-          },
-        },
-      ]
-    );
+    redeemingIdRef.current = item.id;
+    setRedeemingId(item.id);
+    supabase.rpc('redeem_points', {
+      uid: session!.user.id,
+      cost: item.cost,
+      reward: item.id,
+    }).then(({ error }) => {
+      redeemingIdRef.current = null;
+      setRedeemingId(null);
+      if (error) {
+        useToastStore.getState().showToast({
+          type: 'error',
+          title: 'REDEMPTION FAILED',
+          subtitle: error.message,
+        });
+        return;
+      }
+      fetchData();
+    });
   }, [balance, session, fetchData]);
 
   return (
@@ -166,70 +146,56 @@ export default function Rewards() {
           <Text style={styles.heroPts}>ZAPP POINTS</Text>
         </View>
 
-        {/* Error state */}
-        {fetchError && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{fetchError}</Text>
-            <Pressable onPress={fetchData} accessibilityLabel="Retry loading rewards">
-              <Text style={styles.retryText}>Retry</Text>
-            </Pressable>
-          </View>
-        )}
-
         {/* Rewards catalog */}
-        {!fetchError && (
-          <>
-            <Text style={styles.sectionLabel}>REWARDS CATALOG</Text>
-            <View style={styles.catalogPadding}>
-              {CATALOG.map((item) => (
-                <RewardCard
-                  key={item.id}
-                  label={item.label}
-                  cost={item.cost}
-                  accentColor={item.accentColor}
-                  iconLabel={item.iconLabel}
-                  balance={balance ?? 0}
-                  redeeming={redeemingId === item.id}
-                  onRedeem={() => handleRedeem(item)}
-                />
-              ))}
-            </View>
-          </>
-        )}
+        <>
+          <Text style={styles.sectionLabel}>REWARDS CATALOG</Text>
+          <View style={styles.catalogPadding}>
+            {CATALOG.map((item) => (
+              <RewardCard
+                key={item.id}
+                label={item.label}
+                cost={item.cost}
+                accentColor={item.accentColor}
+                iconLabel={item.iconLabel}
+                balance={balance ?? 0}
+                redeeming={redeemingId === item.id}
+                onRedeem={() => handleRedeem(item)}
+              />
+            ))}
+          </View>
+        </>
 
         {/* Transaction history */}
-        {!fetchError && (
-          <>
-            <Text style={styles.sectionLabel}>HISTORY</Text>
-            {loading ? (
-              <View style={styles.skeletonContainer}>
-                {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
-              </View>
-            ) : transactions.length === 0 ? (
-              <Text style={styles.emptyText}>Start charging to earn points!</Text>
-            ) : (
-              transactions.map((tx, i) => (
-                <View
-                  key={tx.id}
-                  style={[styles.txRow, i === transactions.length - 1 && styles.txRowLast]}
-                >
-                  <View style={styles.txLeft}>
-                    <Text style={styles.txReason}>{tx.reason}</Text>
-                    <Text style={styles.txDate}>
-                      {new Date(tx.created_at).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </Text>
-                  </View>
-                  <Text style={[styles.txDelta, { color: tx.delta >= 0 ? COLOR_GOLD : COLOR_RED }]}>
-                    {tx.delta >= 0 ? '+' : ''}{tx.delta.toLocaleString()}
+        <>
+          <Text style={styles.sectionLabel}>HISTORY</Text>
+          {loading ? (
+            <View style={styles.skeletonContainer}>
+              {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
+            </View>
+          ) : transactions.length === 0 ? (
+            <Text style={styles.emptyText}>Start charging to earn points!</Text>
+          ) : (
+            transactions.map((tx, i) => (
+              <View
+                key={tx.id}
+                style={[styles.txRow, i === transactions.length - 1 && styles.txRowLast]}
+              >
+                <View style={styles.txLeft}>
+                  <Text style={styles.txReason}>{tx.reason}</Text>
+                  <Text style={styles.txDate}>
+                    {new Date(tx.created_at).toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </Text>
                 </View>
-              ))
-            )}
-          </>
-        )}
+                <Text style={[styles.txDelta, { color: tx.delta >= 0 ? COLOR_GOLD : COLOR_RED }]}>
+                  {tx.delta >= 0 ? '+' : ''}{tx.delta.toLocaleString()}
+                </Text>
+              </View>
+            ))
+          )}
+        </>
 
       </ScrollView>
     </View>

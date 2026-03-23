@@ -12,6 +12,7 @@ import {
   BottomSheetModal, BottomSheetModalProvider, BottomSheetView,
 } from '@gorhom/bottom-sheet';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import { useSession } from '../../lib/session-context';
 import { openPaymentSheet } from '../../lib/stripe';
 import {
@@ -61,8 +62,8 @@ export default function Profile() {
 
   useEffect(() => {
     if (!session) return;
-    supabase.from('user_profiles').select('full_name, points_balance, membership_tier').eq('id', session.user.id).single()
-      .then(({ data }) => { if (data) setProfile(data); });
+    supaQuery(supabase.from('user_profiles').select('full_name, points_balance, membership_tier').eq('id', session.user.id).single())
+      .then((data) => { if (data) setProfile(data); });
   }, [session]);
 
   useEffect(() => {
@@ -73,12 +74,12 @@ export default function Profile() {
     if (activeTab === 'payment') { setBookings([]); setLoading(false); return; }
 
     Promise.all([
-      supabase.from('charge_bookings').select('id, start_time, amount_paid, status').eq('user_id', session.user.id),
-      supabase.from('stay_bookings').select('id, check_in, amount_paid, status').eq('user_id', session.user.id),
-    ]).then(([chargeRes, stayRes]) => {
+      supaQuery(supabase.from('charge_bookings').select('id, start_time, amount_paid, status').eq('user_id', session.user.id)),
+      supaQuery(supabase.from('stay_bookings').select('id, check_in, amount_paid, status').eq('user_id', session.user.id)),
+    ]).then(([chargeData, stayData]) => {
       const combined: Booking[] = [
-        ...(chargeRes.data ?? []).map((b: ChargeBookingRow) => ({ id: b.id, type: 'Charge', date: b.start_time, detail: 'EV Charging', amount: b.amount_paid })),
-        ...(stayRes.data ?? []).map((b: StayBookingRow) => ({ id: b.id, type: 'Stay', date: b.check_in, detail: 'Lodging', amount: b.amount_paid })),
+        ...(chargeData ?? []).map((b: ChargeBookingRow) => ({ id: b.id, type: 'Charge', date: b.start_time, detail: 'EV Charging', amount: b.amount_paid })),
+        ...(stayData ?? []).map((b: StayBookingRow) => ({ id: b.id, type: 'Stay', date: b.check_in, detail: 'Lodging', amount: b.amount_paid })),
       ].filter((b) => isUpcoming ? b.date >= now.slice(0, 10) : b.date < now.slice(0, 10))
         .sort((a, z) => isUpcoming ? a.date.localeCompare(z.date) : z.date.localeCompare(a.date));
       setBookings(combined);
@@ -276,24 +277,15 @@ export default function Profile() {
                 if (!session) return;
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setSaving(true);
-                try {
-                  const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ full_name: editName.trim() })
-                    .eq('id', session.user.id);
-                  if (error) {
-                    Alert.alert('Error', 'Could not save changes.');
-                    return;
-                  }
-                  setProfile((prev) =>
-                    prev ? { ...prev, full_name: editName.trim() } : prev
-                  );
-                  editSheetRef.current?.dismiss();
-                } catch {
-                  Alert.alert('Error', 'Could not save changes.');
-                } finally {
-                  setSaving(false);
-                }
+                const result = await supaQuery(
+                  supabase.from('user_profiles').update({ full_name: editName.trim() }).eq('id', session.user.id).select('id').single()
+                );
+                setSaving(false);
+                if (!result) return; // toast already fired
+                setProfile((prev) =>
+                  prev ? { ...prev, full_name: editName.trim() } : prev
+                );
+                editSheetRef.current?.dismiss();
               }}
             >
               {saving ? (

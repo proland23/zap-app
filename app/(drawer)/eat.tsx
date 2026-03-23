@@ -7,6 +7,7 @@ import { BottomSheetModal, BottomSheetModalProvider, BottomSheetView, BottomShee
 import Constants from 'expo-constants';
 import * as Haptics from 'expo-haptics';
 import { supabase } from '../../lib/supabase';
+import { supaQuery } from '../../lib/supabase-helpers';
 import { openPaymentSheet } from '../../lib/stripe';
 import { useCartStore } from '../../lib/cart-store';
 import { useSession } from '../../lib/session-context';
@@ -36,7 +37,7 @@ export default function Eat() {
   const TAB_WIDTH = 88;
 
   useEffect(() => {
-    supabase.from('menu_items').select('*').then(({ data }) => { if (data) setMenuItems(data); setLoading(false); });
+    supaQuery(supabase.from('menu_items').select('*')).then((data) => { if (data) setMenuItems(data); setLoading(false); });
   }, []);
 
   const filtered = menuItems.filter((i) => i.category === activeCategory);
@@ -55,7 +56,10 @@ export default function Eat() {
     if (Constants.appOwnership !== 'expo') {
       const success = await openPaymentSheet('mock_secret');
       if (!success) return;
-      await supabase.from('orders').insert({ user_id: session.user.id, items, total, status: 'pending' });
+      const order = await supaQuery(
+        supabase.from('orders').insert({ user_id: session.user.id, items, total, status: 'pending' }).select('id').single()
+      );
+      if (!order) return; // toast already fired
     } else {
       Alert.alert('Order placed (mock)', 'Your food order has been placed!');
     }
