@@ -1,7 +1,9 @@
 import { act, renderHook } from '@testing-library/react-native';
 import { useCartStore } from '../cart-store';
 
-beforeEach(() => useCartStore.setState({ items: [] }));
+beforeEach(() => {
+  useCartStore.setState({ items: [], shopItems: [] });
+});
 
 describe('cart store', () => {
   it('adds a new item with qty 1', () => {
