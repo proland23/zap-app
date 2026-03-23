@@ -15,11 +15,12 @@ const NAV_ITEMS = [
   { label: 'CHARGE',  route: '/(drawer)/charge' as const,  color: COLOR_CYAN },
   { label: 'STAY',    route: '/(drawer)/stay' as const,    color: COLOR_TEXT_PRIMARY },
   { label: 'EAT',     route: '/(drawer)/eat' as const,     color: COLOR_TEXT_PRIMARY },
+  { label: 'SHOP',    route: '/(drawer)/shop' as const,    color: COLOR_TEXT_PRIMARY },
   { label: 'REWARDS', route: '/(drawer)/rewards' as const, color: COLOR_TEXT_PRIMARY },
   { label: 'PROFILE', route: '/(drawer)/profile' as const, color: COLOR_TEXT_PRIMARY },
 ];
 
-const SOON_ITEMS = ['SHOP', 'RIDE', 'FLY'];
+const SOON_ITEMS = ['RIDE', 'FLY'];
 
 interface Props extends DrawerContentComponentProps {
   userName?: string;
