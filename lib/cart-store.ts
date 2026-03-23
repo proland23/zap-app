@@ -52,7 +52,7 @@ export const useCartStore = create<CartState>()(
               ),
             };
           }
-          return { shopItems: [...state.shopItems, { ...item, qty }] };
+          return { shopItems: [...state.shopItems, { ...item, qty: Math.min(qty, 10) }] };
         });
       },
       removeShopItem: (id) => { set((state) => ({ shopItems: state.shopItems.filter((i) => i.id !== id) })); },

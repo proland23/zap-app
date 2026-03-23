@@ -54,6 +54,12 @@ describe('shop cart store', () => {
     expect(result.current.shopItems[0].qty).toBe(7);
   });
 
+  it('caps qty at 10 on initial insert when qty > 10', () => {
+    const { result } = renderHook(() => useCartStore());
+    act(() => result.current.addShopItem({ id: 'a', name: 'Tee', price: 25 }, 15));
+    expect(result.current.shopItems[0].qty).toBe(10);
+  });
+
   it('caps qty at 10 when accumulating', () => {
     const { result } = renderHook(() => useCartStore());
     act(() => result.current.addShopItem({ id: 'a', name: 'Tee', price: 25 }, 8));
