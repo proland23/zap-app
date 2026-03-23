@@ -2,11 +2,13 @@
 import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useFonts } from 'expo-font';
 import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import * as SplashScreen from 'expo-splash-screen';
 import { SessionProvider, useSession } from '../lib/session-context';
 import { FONT_BEBAS } from '../lib/constants';
+import Toast from '../components/Toast';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -16,11 +18,13 @@ export default function RootLayout() {
   });
 
   return (
-    <SafeAreaProvider>
-      <SessionProvider>
-        <AppShell fontsReady={fontsLoaded || !!fontError} />
-      </SessionProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SessionProvider>
+          <AppShell fontsReady={fontsLoaded || !!fontError} />
+        </SessionProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -34,5 +38,10 @@ function AppShell({ fontsReady }: { fontsReady: boolean }) {
     }
   }, [fontsReady, sessionLoading]);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }} />
+      <Toast />
+    </>
+  );
 }
