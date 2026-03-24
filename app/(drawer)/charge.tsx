@@ -1,7 +1,8 @@
 // app/(drawer)/charge.tsx
 import { useEffect, useRef, useState, Component } from 'react';
 import { View, Text, FlatList, StyleSheet, StatusBar, Pressable, Platform } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Haptics from 'expo-haptics';
@@ -10,6 +11,9 @@ import { supabase } from '../../lib/supabase';
 import { openPaymentSheet } from '../../lib/stripe';
 import BayMarker from '../../components/BayMarker';
 import BayCard from '../../components/BayCard';
+import ScreenEntrance from '../../components/ScreenEntrance';
+import StaggerItem from '../../components/StaggerItem';
+import Skeleton from '../../components/Skeleton';
 import { useToastStore } from '../../lib/toast-store';
 import {
   COLOR_NAVY, COLOR_ELEVATED, COLOR_GOLD, COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, FONT_BEBAS,
@@ -18,6 +22,12 @@ import {
 
 type BayStatus = 'available' | 'reserved' | 'occupied';
 interface Bay { id: string; bay_number: number; charger_speed_kw: number; status: BayStatus; charge_pct: number; }
+interface PlaceStation {
+  place_id: string;
+  name: string;
+  vicinity: string;
+  geometry: { location: { lat: number; lng: number } };
+}
 
 class MapErrorBoundary extends Component<{ children: React.ReactNode; onError: () => void }, { hasError: boolean }> {
   state = { hasError: false };
@@ -47,8 +57,8 @@ export default function Charge() {
   const [loading, setLoading] = useState(true);
   const [selectedBay, setSelectedBay] = useState<Bay | null>(null);
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[0]);
-  // Maps SDK for Android requires billing enabled in Google Cloud Console
-  const [mapError, setMapError] = useState(Platform.OS === 'android');
+  const [mapError, setMapError] = useState(false);
+  const [nearbyStations, setNearbyStations] = useState<PlaceStation[]>([]);
   const [confirmState, setConfirmState] = useState<null | {
     bayNumber: number;
     hours: number;
@@ -58,6 +68,46 @@ export default function Charge() {
   }>(null);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const mapRef = useRef<MapView>(null);
+
+  const fetchNearbyStations = async (lat: number, lng: number) => {
+    const key = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!key) return;
+    try {
+      const res = await fetch(
+        'https://places.googleapis.com/v1/places:searchNearby',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Goog-Api-Key': key,
+            'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location',
+          },
+          body: JSON.stringify({
+            includedTypes: ['electric_vehicle_charging_station'],
+            maxResultCount: 20,
+            locationRestriction: {
+              circle: { center: { latitude: lat, longitude: lng }, radius: 50000 },
+            },
+          }),
+        }
+      );
+      const json = await res.json();
+      if (json.places) {
+        setNearbyStations(json.places.map((p: any) => ({
+          place_id: p.id,
+          name: p.displayName?.text ?? 'EV Charging',
+          vicinity: p.formattedAddress ?? '',
+          geometry: { location: { lat: p.location.latitude, lng: p.location.longitude } },
+        })));
+      } else {
+        const msg = json.error?.message ?? JSON.stringify(json).slice(0, 120);
+        showToast({ type: 'error', title: 'PLACES API', subtitle: msg });
+      }
+    } catch (e) {
+      showToast({ type: 'error', title: 'PLACES API', subtitle: e instanceof Error ? e.message : String(e) });
+    }
+  };
 
   const fetchBays = async () => {
     const { data } = await supabase.from('charging_bays').select('*').order('bay_number');
@@ -67,6 +117,18 @@ export default function Charge() {
 
   useEffect(() => {
     fetchBays();
+
+    // Request location and fetch nearby EV stations
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      const loc = status === 'granted'
+        ? await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+        : null;
+      const lat = loc?.coords.latitude ?? STATION.latitude;
+      const lng = loc?.coords.longitude ?? STATION.longitude;
+      fetchNearbyStations(lat, lng);
+    })();
+
     const channel = supabase
       .channel('charging_bays')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'charging_bays' }, (payload) => {
@@ -138,7 +200,7 @@ export default function Charge() {
 
   return (
     <BottomSheetModalProvider>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenEntrance style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="light-content" />
 
         {/* Map */}
@@ -151,10 +213,25 @@ export default function Charge() {
         ) : (
           <MapErrorBoundary onError={() => setMapError(true)}>
             <MapView
+              ref={mapRef}
               style={styles.map}
               provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
-              initialRegion={{ ...STATION, latitudeDelta: 0.003, longitudeDelta: 0.003 }}
+              initialRegion={{ ...STATION, latitudeDelta: 0.005, longitudeDelta: 0.005 }}
+              showsUserLocation
+              showsMyLocationButton
             >
+              {/* Nearby EV charging stations from Google Places */}
+              {nearbyStations.map((station) => (
+                <Marker
+                  key={station.place_id}
+                  coordinate={{ latitude: station.geometry.location.lat, longitude: station.geometry.location.lng }}
+                  title={station.name}
+                  description={station.vicinity}
+                  pinColor={COLOR_CYAN}
+                />
+              ))}
+
+              {/* Zapp bay markers */}
               {bays.map((bay, i) => {
                 const { lat, lng } = bayCoord(i);
                 return (
@@ -175,7 +252,9 @@ export default function Charge() {
         <View style={styles.listContainer}>
           <Text style={styles.listTitle}>CHARGING BAYS</Text>
           {loading ? (
-            <Text style={styles.loadingText}>Loading bays...</Text>
+            <View style={{ flexDirection: 'row', paddingHorizontal: 16, gap: 12 }}>
+              {[0, 1, 2].map((i) => <Skeleton key={i} width={140} height={140} borderRadius={20} />)}
+            </View>
           ) : bays.length === 0 ? (
             <Text style={styles.emptyText}>No bays found — connect to Supabase to see live data</Text>
           ) : (
@@ -185,13 +264,15 @@ export default function Charge() {
               keyExtractor={(b) => b.id}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 8 }}
-              renderItem={({ item }) => (
-                <BayCard
-                  bayNumber={item.bay_number}
-                  speedKw={item.charger_speed_kw}
-                  status={item.status}
-                  onReserve={() => openReserve(item)}
-                />
+              renderItem={({ item, index }) => (
+                <StaggerItem index={index}>
+                  <BayCard
+                    bayNumber={item.bay_number}
+                    speedKw={item.charger_speed_kw}
+                    status={item.status}
+                    onReserve={() => openReserve(item)}
+                  />
+                </StaggerItem>
               )}
             />
           )}
@@ -265,7 +346,7 @@ export default function Charge() {
             )}
           </BottomSheetView>
         </BottomSheetModal>
-      </View>
+      </ScreenEntrance>
     </BottomSheetModalProvider>
   );
 }

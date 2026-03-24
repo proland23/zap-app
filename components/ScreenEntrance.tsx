@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ViewStyle } from 'react-native';
+import { StyleProp, ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,7 +10,7 @@ const SPRING = { damping: 20, stiffness: 200, mass: 1 };
 
 interface Props {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function ScreenEntrance({ children, style }: Props) {

@@ -1,5 +1,6 @@
 // components/BayCard.tsx
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import AnimatedPressable from './AnimatedPressable';
 import * as Haptics from 'expo-haptics';
 import {
   COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD, COLOR_CYAN,
@@ -35,14 +36,14 @@ export default function BayCard({ bayNumber, speedKw, status, onReserve }: Props
         <Text style={[styles.speedText, { color: speedColor }]}>{speedKw}kW</Text>
       </View>
       <Text style={styles.statusLabel}>{status.toUpperCase()}</Text>
-      <Pressable
+      <AnimatedPressable
         style={[styles.reserveBtn, !canReserve && styles.disabledBtn]}
         onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); onReserve(); }}
         disabled={!canReserve}
         accessibilityLabel={`Reserve bay ${bayNumber}`}
       >
         <Text style={styles.reserveText}>RESERVE</Text>
-      </Pressable>
+      </AnimatedPressable>
     </View>
   );
 }
