@@ -1,15 +1,14 @@
 // components/AnimatedPressable.tsx
-import { PressableProps } from 'react-native';
+import { Pressable, PressableProps } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
-import { Pressable } from 'react-native';
 
 const SPRING = { damping: 20, stiffness: 200, mass: 1 };
 
-export default function AnimatedPressable({ onPressIn, onPressOut, style, children, ...rest }: PressableProps) {
+export default function AnimatedPressable({ onPressIn, onPressOut, style, ...rest }: PressableProps) {
   const scale = useSharedValue(1);
 
   const animStyle = useAnimatedStyle(() => ({
@@ -29,9 +28,7 @@ export default function AnimatedPressable({ onPressIn, onPressOut, style, childr
         }}
         style={style}
         {...rest}
-      >
-        {children}
-      </Pressable>
+      />
     </Animated.View>
   );
 }
