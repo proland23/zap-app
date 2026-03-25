@@ -255,85 +255,82 @@ export default function Shop() {
           backgroundStyle={styles.sheetBg}
           handleIndicatorStyle={styles.sheetHandle}
         >
-          <BottomSheetView style={styles.cartSheet}>
-            {/* Header */}
-            <View style={styles.cartHeader}>
-              <Text style={styles.cartTitle}>YOUR CART</Text>
-            </View>
-
-            {/* Item list */}
-            <BottomSheetFlatList
-              data={shopItems}
-              keyExtractor={(i) => i.id}
-              style={styles.cartList}
-              ListEmptyComponent={
-                <View style={styles.cartEmpty}>
-                  <Text style={styles.cartEmptyText}>Your cart is empty</Text>
-                </View>
-              }
-              renderItem={({ item }) => (
-                <View style={styles.cartRow}>
-                  <View style={styles.cartRowLeft}>
-                    <Text style={styles.cartItemName}>{item.name}</Text>
-                    <Text style={styles.cartItemQty}>x{item.qty}</Text>
-                  </View>
-                  <View style={styles.cartRowRight}>
-                    <Text style={styles.cartItemTotal}>${(item.price * item.qty).toFixed(2)}</Text>
-                    <Pressable
-                      style={styles.removeBtn}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        removeShopItem(item.id);
-                      }}
-                      accessibilityLabel="Remove item"
-                      accessibilityRole="button"
-                    >
-                      <Text style={styles.removeBtnText}>✕</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              )}
-            />
-
-            {/* Footer — pinned below list */}
-            <View style={[styles.cartFooter, { paddingBottom: insets.bottom + 16 }]}>
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>TOTAL</Text>
-                <Text style={styles.totalValue}>
-                  ${shopItems.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2)}
-                </Text>
+          <BottomSheetFlatList
+            data={shopItems}
+            keyExtractor={(i) => i.id}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            ListHeaderComponent={
+              <View style={styles.cartHeader}>
+                <Text style={styles.cartTitle}>YOUR CART</Text>
               </View>
-              <Pressable
-                style={[styles.checkoutBtn, (checkingOut || shopItems.length === 0) && styles.checkoutBtnDisabled]}
-                disabled={checkingOut || shopItems.length === 0}
-                accessibilityLabel="Checkout"
-                accessibilityRole="button"
-                accessibilityState={{ disabled: checkingOut || shopItems.length === 0, busy: checkingOut }}
-                onPress={async () => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  setCheckingOut(true);
-                  try {
-                    const ok = await openPaymentSheet('mock_secret');
-                    if (!ok) {
-                      Alert.alert('Error', 'Could not process payment — please try again.');
-                      return;
+            }
+            ListEmptyComponent={
+              <View style={styles.cartEmpty}>
+                <Text style={styles.cartEmptyText}>Your cart is empty</Text>
+              </View>
+            }
+            ListFooterComponent={
+              <View style={styles.cartFooter}>
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>TOTAL</Text>
+                  <Text style={styles.totalValue}>
+                    ${shopItems.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2)}
+                  </Text>
+                </View>
+                <Pressable
+                  style={[styles.checkoutBtn, (checkingOut || shopItems.length === 0) && styles.checkoutBtnDisabled]}
+                  disabled={checkingOut || shopItems.length === 0}
+                  accessibilityLabel="Checkout"
+                  accessibilityRole="button"
+                  accessibilityState={{ disabled: checkingOut || shopItems.length === 0, busy: checkingOut }}
+                  onPress={async () => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    setCheckingOut(true);
+                    try {
+                      const ok = await openPaymentSheet('mock_secret');
+                      if (!ok) {
+                        Alert.alert('Error', 'Could not process payment — please try again.');
+                        return;
+                      }
+                      clearShopCart();
+                      cartSheetRef.current?.dismiss();
+                      Alert.alert('Order placed!', "We'll have it ready for you shortly.");
+                    } finally {
+                      setCheckingOut(false);
                     }
-                    clearShopCart();
-                    cartSheetRef.current?.dismiss();
-                    Alert.alert('Order placed!', "We'll have it ready for you shortly.");
-                  } finally {
-                    setCheckingOut(false);
-                  }
-                }}
-              >
-                {checkingOut ? (
-                  <ActivityIndicator size="small" color={COLOR_NAVY} />
-                ) : (
-                  <Text style={styles.checkoutText}>CHECKOUT</Text>
-                )}
-              </Pressable>
-            </View>
-          </BottomSheetView>
+                  }}
+                >
+                  {checkingOut ? (
+                    <ActivityIndicator size="small" color={COLOR_NAVY} />
+                  ) : (
+                    <Text style={styles.checkoutText}>CHECKOUT</Text>
+                  )}
+                </Pressable>
+              </View>
+            }
+            renderItem={({ item }) => (
+              <View style={styles.cartRow}>
+                <View style={styles.cartRowLeft}>
+                  <Text style={styles.cartItemName}>{item.name}</Text>
+                  <Text style={styles.cartItemQty}>x{item.qty}</Text>
+                </View>
+                <View style={styles.cartRowRight}>
+                  <Text style={styles.cartItemTotal}>${(item.price * item.qty).toFixed(2)}</Text>
+                  <Pressable
+                    style={styles.removeBtn}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      removeShopItem(item.id);
+                    }}
+                    accessibilityLabel="Remove item"
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.removeBtnText}>✕</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+          />
         </BottomSheetModal>
       </ScreenEntrance>
     </BottomSheetModalProvider>
@@ -393,8 +390,6 @@ const styles = StyleSheet.create({
   outOfStock: { color: COLOR_TEXT_MUTED, fontSize: 9, letterSpacing: 1, marginTop: 4 },
   sheetBg: { backgroundColor: COLOR_ELEVATED },
   sheetHandle: { backgroundColor: 'rgba(255,255,255,0.2)' },
-  cartSheet: { flex: 1 },
-  cartList: { flex: 1 },
   detailContent: { padding: 24 },
   detailIcon: {
     width: 64,
@@ -484,7 +479,9 @@ const styles = StyleSheet.create({
   cartEmptyText: { color: COLOR_TEXT_MUTED, fontSize: 14 },
   cartFooter: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 16,
+    paddingBottom: 8,
+    marginTop: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.08)',
   },
