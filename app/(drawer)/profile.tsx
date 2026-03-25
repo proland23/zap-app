@@ -2,15 +2,17 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   View, Text, Pressable, FlatList, StyleSheet, StatusBar,
-  TextInput, ActivityIndicator, Alert,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import {
-  BottomSheetModal, BottomSheetModalProvider, BottomSheetView,
+  BottomSheetModal, BottomSheetModalProvider, BottomSheetView, BottomSheetTextInput,
 } from '@gorhom/bottom-sheet';
+import ScreenEntrance from '../../components/ScreenEntrance';
+import AnimatedPressable from '../../components/AnimatedPressable';
 import { supabase } from '../../lib/supabase';
 import { supaQuery } from '../../lib/supabase-helpers';
 import { useSession } from '../../lib/session-context';
@@ -105,7 +107,7 @@ export default function Profile() {
 
   return (
     <BottomSheetModalProvider>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenEntrance style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
@@ -119,7 +121,7 @@ export default function Profile() {
           <View style={styles.headerInfo}>
             <View style={styles.nameRow}>
               <Text style={styles.name}>{profile?.full_name ?? '—'}</Text>
-              <Pressable
+              <AnimatedPressable
                 onPress={() => {
                   setEditName(profile?.full_name ?? '');
                   editSheetRef.current?.present();
@@ -128,7 +130,7 @@ export default function Profile() {
                 accessibilityRole="button"
               >
                 <Text style={styles.editBtn}>EDIT</Text>
-              </Pressable>
+              </AnimatedPressable>
             </View>
             <Text style={styles.email}>{session?.user.email}</Text>
             <View
@@ -226,9 +228,11 @@ export default function Profile() {
         {/* Edit profile bottom sheet */}
         <BottomSheetModal
           ref={editSheetRef}
-          snapPoints={['60%']}
+          snapPoints={['80%']}
           backgroundStyle={styles.sheetBg}
           handleIndicatorStyle={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+          keyboardBehavior="extend"
+          keyboardBlurBehavior="restore"
         >
           <BottomSheetView style={styles.editSheetContent}>
             {/* Avatar with CAM overlay */}
@@ -250,7 +254,7 @@ export default function Profile() {
 
             {/* Name input */}
             <Text style={styles.inputLabel}>FULL NAME</Text>
-            <TextInput
+            <BottomSheetTextInput
               style={[
                 styles.nameInput,
                 { borderColor: nameFocused ? COLOR_GOLD : 'rgba(255,255,255,0.12)' },
@@ -306,7 +310,7 @@ export default function Profile() {
             </Pressable>
           </BottomSheetView>
         </BottomSheetModal>
-      </View>
+      </ScreenEntrance>
     </BottomSheetModalProvider>
   );
 }

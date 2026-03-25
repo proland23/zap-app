@@ -19,6 +19,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSession } from '../../lib/session-context';
 import { supabase } from '../../lib/supabase';
 import RewardCard from '../../components/RewardCard';
+import ScreenEntrance from '../../components/ScreenEntrance';
+import Skeleton from '../../components/Skeleton';
 import {
   COLOR_NAVY, COLOR_ELEVATED, COLOR_GOLD, COLOR_CYAN, COLOR_PURPLE, COLOR_RED,
   COLOR_TEXT_MUTED, COLOR_TEXT_SECONDARY, FONT_BEBAS,
@@ -124,7 +126,7 @@ export default function Rewards() {
   }, [balance, session, fetchData]);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <ScreenEntrance style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar barStyle="light-content" />
       <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 20 }]}>
 
@@ -133,7 +135,7 @@ export default function Rewards() {
           <View style={styles.glow} />
           <Text style={styles.heroLabel}>YOUR BALANCE</Text>
           {loading ? (
-            <View style={styles.skeletonHero} />
+            <Skeleton width={160} height={72} borderRadius={8} />
           ) : (
             <AnimatedTextInput
               style={styles.heroPoints}
@@ -170,7 +172,7 @@ export default function Rewards() {
           <Text style={styles.sectionLabel}>HISTORY</Text>
           {loading ? (
             <View style={styles.skeletonContainer}>
-              {[0, 1, 2].map((i) => <View key={i} style={styles.skeletonRow} />)}
+              {[0, 1, 2].map((i) => <Skeleton key={i} height={52} borderRadius={12} />)}
             </View>
           ) : transactions.length === 0 ? (
             <Text style={styles.emptyText}>Start charging to earn points!</Text>
@@ -198,7 +200,7 @@ export default function Rewards() {
         </>
 
       </ScrollView>
-    </View>
+    </ScreenEntrance>
   );
 }
 
