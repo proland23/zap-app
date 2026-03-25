@@ -14,6 +14,9 @@ import { supaQuery } from '../../lib/supabase-helpers';
 import { openPaymentSheet } from '../../lib/stripe';
 import { useCartStore } from '../../lib/cart-store';
 import CartBadge from '../../components/CartBadge';
+import ScreenEntrance from '../../components/ScreenEntrance';
+import StaggerItem from '../../components/StaggerItem';
+import Skeleton from '../../components/Skeleton';
 import {
   COLOR_NAVY, COLOR_CARD, COLOR_ELEVATED, COLOR_GOLD, COLOR_CYAN, COLOR_PURPLE, COLOR_GREEN,
   COLOR_TEXT_PRIMARY, COLOR_TEXT_SECONDARY, COLOR_TEXT_MUTED, FONT_BEBAS,
@@ -82,7 +85,7 @@ export default function Shop() {
 
   return (
     <BottomSheetModalProvider>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenEntrance style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
@@ -123,7 +126,9 @@ export default function Shop() {
         {/* Content */}
         {loading ? (
           <View style={styles.skeletonGrid}>
-            {[0, 1, 2, 3].map((i) => <View key={i} style={styles.skeletonCard} />)}
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} height={150} borderRadius={16} style={{ flex: 1, minWidth: '45%' }} />
+            ))}
           </View>
         ) : (
           <FlatList
@@ -137,30 +142,32 @@ export default function Shop() {
                 <Text style={styles.emptyText}>No items in this category</Text>
               </View>
             }
-            renderItem={({ item }) => (
-              <Pressable
-                style={[styles.card, !item.in_stock && styles.cardDisabled]}
-                disabled={!item.in_stock}
-                onPress={() => {
-                  setSelectedItem(item);
-                  setQty(1);
-                  detailSheetRef.current?.present();
-                }}
-                accessibilityLabel={item.name}
-                accessibilityRole="button"
-              >
-                <View style={[
-                  styles.iconSquare,
-                  { backgroundColor: CATEGORY_META[item.category].color + '1A' },
-                ]}>
-                  <Text style={[styles.iconLabel, { color: CATEGORY_META[item.category].color }]}>
-                    {CATEGORY_META[item.category].iconLabel}
-                  </Text>
-                </View>
-                <Text style={styles.cardName}>{item.name}</Text>
-                <Text style={styles.cardPrice}>${item.price.toFixed(2)}</Text>
-                {!item.in_stock && <Text style={styles.outOfStock}>OUT OF STOCK</Text>}
-              </Pressable>
+            renderItem={({ item, index }) => (
+              <StaggerItem index={index}>
+                <Pressable
+                  style={[styles.card, !item.in_stock && styles.cardDisabled]}
+                  disabled={!item.in_stock}
+                  onPress={() => {
+                    setSelectedItem(item);
+                    setQty(1);
+                    detailSheetRef.current?.present();
+                  }}
+                  accessibilityLabel={item.name}
+                  accessibilityRole="button"
+                >
+                  <View style={[
+                    styles.iconSquare,
+                    { backgroundColor: CATEGORY_META[item.category].color + '1A' },
+                  ]}>
+                    <Text style={[styles.iconLabel, { color: CATEGORY_META[item.category].color }]}>
+                      {CATEGORY_META[item.category].iconLabel}
+                    </Text>
+                  </View>
+                  <Text style={styles.cardName}>{item.name}</Text>
+                  <Text style={styles.cardPrice}>${item.price.toFixed(2)}</Text>
+                  {!item.in_stock && <Text style={styles.outOfStock}>OUT OF STOCK</Text>}
+                </Pressable>
+              </StaggerItem>
             )}
           />
         )}
@@ -326,7 +333,7 @@ export default function Shop() {
             </Pressable>
           </View>
         </BottomSheetModal>
-      </View>
+      </ScreenEntrance>
     </BottomSheetModalProvider>
   );
 }

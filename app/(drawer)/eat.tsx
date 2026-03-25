@@ -13,6 +13,9 @@ import { useCartStore } from '../../lib/cart-store';
 import { useSession } from '../../lib/session-context';
 import FoodItem from '../../components/FoodItem';
 import CartBadge from '../../components/CartBadge';
+import ScreenEntrance from '../../components/ScreenEntrance';
+import StaggerItem from '../../components/StaggerItem';
+import Skeleton from '../../components/Skeleton';
 import {
   COLOR_NAVY, COLOR_ELEVATED, COLOR_GOLD,
   COLOR_TEXT_PRIMARY, COLOR_TEXT_MUTED, FONT_BEBAS,
@@ -69,7 +72,7 @@ export default function Eat() {
 
   return (
     <BottomSheetModalProvider>
-      <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScreenEntrance style={[styles.container, { paddingTop: insets.top }]}>
         <StatusBar barStyle="light-content" />
 
         {/* Header */}
@@ -100,7 +103,7 @@ export default function Eat() {
         {/* Menu items */}
         {loading ? (
           <View style={styles.skeletonList}>
-            {[0, 1, 2, 3].map((i) => <View key={i} style={styles.skeleton} />)}
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} height={72} borderRadius={12} style={{ marginBottom: 0 }} />)}
           </View>
         ) : filtered.length === 0 ? (
           <View style={styles.empty}><Text style={styles.emptyText}>Menu coming soon</Text></View>
@@ -109,13 +112,15 @@ export default function Eat() {
             data={filtered}
             keyExtractor={(i) => i.id}
             contentContainerStyle={{ paddingBottom: insets.bottom + 80 }}
-            renderItem={({ item }) => (
-              <FoodItem
-                name={item.name}
-                description={item.description}
-                price={item.price}
-                onAdd={() => addItem({ id: item.id, name: item.name, price: item.price })}
-              />
+            renderItem={({ item, index }) => (
+              <StaggerItem index={index}>
+                <FoodItem
+                  name={item.name}
+                  description={item.description}
+                  price={item.price}
+                  onAdd={() => addItem({ id: item.id, name: item.name, price: item.price })}
+                />
+              </StaggerItem>
             )}
           />
         )}
@@ -154,7 +159,7 @@ export default function Eat() {
             </Pressable>
           </View>
         </BottomSheetModal>
-      </View>
+      </ScreenEntrance>
     </BottomSheetModalProvider>
   );
 }
