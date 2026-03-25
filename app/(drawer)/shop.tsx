@@ -483,6 +483,7 @@ const styles = StyleSheet.create({
   cartFooter: {
     paddingHorizontal: 24,
     paddingTop: 12,
+    paddingBottom: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.08)',
   },
