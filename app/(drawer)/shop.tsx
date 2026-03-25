@@ -252,6 +252,7 @@ export default function Shop() {
         <BottomSheetModal
           ref={cartSheetRef}
           snapPoints={['70%']}
+          bottomInset={insets.bottom}
           backgroundStyle={styles.sheetBg}
           handleIndicatorStyle={styles.sheetHandle}
         >
@@ -295,7 +296,7 @@ export default function Shop() {
           />
 
           {/* Footer — plain View, not BottomSheetView */}
-          <View style={[styles.cartFooter, { paddingBottom: insets.bottom + 24 }]}>
+          <View style={styles.cartFooter}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>TOTAL</Text>
               <Text style={styles.totalValue}>

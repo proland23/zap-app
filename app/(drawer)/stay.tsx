@@ -41,9 +41,10 @@ export default function Stay() {
           data={units}
           numColumns={2}
           keyExtractor={(u) => u.id}
-          contentContainerStyle={{ padding: 10, paddingBottom: insets.bottom + 16 }}
+          columnWrapperStyle={{ paddingHorizontal: 4 }}
+          contentContainerStyle={{ padding: 6, paddingBottom: insets.bottom + 16 }}
           renderItem={({ item, index }) => (
-            <StaggerItem index={index}>
+            <StaggerItem index={index} style={{ flex: 1 }}>
               <LodgingCard
                 name={item.name}
                 nightlyRate={item.nightly_rate}
