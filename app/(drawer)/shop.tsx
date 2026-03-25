@@ -366,13 +366,6 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  skeletonCard: {
-    flex: 1,
-    minWidth: '45%',
-    height: 150,
-    backgroundColor: COLOR_ELEVATED,
-    borderRadius: 16,
-  },
   columnWrapper: { gap: 12 },
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 48 },
   emptyText: { color: COLOR_TEXT_MUTED, fontSize: 14, textAlign: 'center' },

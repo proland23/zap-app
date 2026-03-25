@@ -363,7 +363,6 @@ const styles = StyleSheet.create({
   mapPlaceholderNote: { color: COLOR_TEXT_MUTED, fontSize: 11, textAlign: 'center', paddingHorizontal: 32 },
   listContainer: { flex: 0.4, backgroundColor: COLOR_NAVY, paddingTop: 12 },
   listTitle: { color: COLOR_TEXT_MUTED, fontSize: 10, letterSpacing: 2, paddingHorizontal: 16, marginBottom: 10 },
-  loadingText: { color: COLOR_TEXT_MUTED, paddingHorizontal: 16 },
   emptyText: { color: COLOR_TEXT_MUTED, paddingHorizontal: 16, fontSize: 13 },
   sheetBg: { backgroundColor: COLOR_ELEVATED },
   sheetContent: { padding: 24 },

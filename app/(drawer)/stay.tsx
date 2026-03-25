@@ -62,7 +62,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLOR_NAVY },
   title: { fontFamily: FONT_BEBAS, fontSize: 32, color: '#fff', letterSpacing: 3, paddingHorizontal: 20, marginBottom: 8 },
   skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', padding: 10 },
-  skeleton: { flex: 1, height: 180, margin: 6, backgroundColor: COLOR_ELEVATED, borderRadius: 20, minWidth: '45%' },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: COLOR_TEXT_MUTED, fontSize: 15 },
 });

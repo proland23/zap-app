@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
   tabTextActive: { color: COLOR_GOLD },
   underline: { position: 'absolute', bottom: 0, height: 2, backgroundColor: COLOR_GOLD, borderRadius: 1 },
   skeletonList: { padding: 16, gap: 12 },
-  skeleton: { height: 72, backgroundColor: COLOR_ELEVATED, borderRadius: 12 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { color: COLOR_TEXT_MUTED, fontSize: 15 },
   sheetBg: { backgroundColor: COLOR_ELEVATED },

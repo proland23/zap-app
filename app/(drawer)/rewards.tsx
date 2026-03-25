@@ -237,13 +237,6 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   heroPts: { color: COLOR_TEXT_MUTED, fontSize: 10, letterSpacing: 3 },
-  skeletonHero: {
-    width: 160,
-    height: 72,
-    backgroundColor: COLOR_ELEVATED,
-    borderRadius: 12,
-    margin: 8,
-  },
   sectionLabel: {
     color: COLOR_TEXT_MUTED,
     fontSize: 10,
@@ -253,7 +246,6 @@ const styles = StyleSheet.create({
   },
   catalogPadding: { paddingHorizontal: 16, marginBottom: 24 },
   skeletonContainer: { paddingHorizontal: 16, gap: 10 },
-  skeletonRow: { height: 52, backgroundColor: COLOR_ELEVATED, borderRadius: 12 },
   emptyText: {
     color: COLOR_TEXT_MUTED,
     fontSize: 13,

@@ -54,5 +54,5 @@ export default function Skeleton({ width, height, borderRadius = 8, style }: Pro
 
 const styles = StyleSheet.create({
   base: { backgroundColor: COLOR_ELEVATED, overflow: 'hidden' },
-  shimmer: { position: 'absolute', top: 0, bottom: 0, width: 100 },
+  shimmer: { position: 'absolute', top: 0, bottom: 0, width: 200 },
 });
