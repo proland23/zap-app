@@ -258,7 +258,7 @@ export default function Shop() {
           <BottomSheetFlatList
             data={shopItems}
             keyExtractor={(i) => i.id}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 48) + 24 }}
             ListHeaderComponent={
               <View style={styles.cartHeader}>
                 <Text style={styles.cartTitle}>YOUR CART</Text>
